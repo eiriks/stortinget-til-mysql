@@ -274,6 +274,97 @@ def get_interpellasjoner(sesjonid):
 
 def get_skriftligesporsmal(sesjonid):
     url = "http://data.stortinget.no/eksport/skriftligesporsmal?sesjonid=%s" % (sesjonid)
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content)
+    alle_sporsmaal = []
+    for spor in soup.find_all('sporsmal'):
+        try:
+            pa_vegne_av = spor.besvart_pa_vegne_av.id.text
+        except:
+            pa_vegne_av = ''
+        
+        try:
+            besvart_pa_vegne_av_minister_id = spor.besvart_pa_vegne_av_minister_id.text
+        except:
+            besvart_pa_vegne_av_minister_id = ''
+        
+        try: 
+            besvart_pa_vegne_av_minister_tittel = spor.besvart_pa_vegne_av_minister_tittel.text
+        except:
+            besvart_pa_vegne_av_minister_tittel = ''
+        try:
+            rette_vedkommende = spor.rette_vedkommende.id.text
+        except:
+            rette_vedkommende = True
+        try:
+            rette_vedkommende_minister_id = spor.rette_vedkommende_minister_id.text
+        except:
+            rette_vedkommende_minister_id =True
+        try:
+            rette_vedkommende_minister_tittel = spor.rette_vedkommende_minister_tittel.text
+        except:
+            rette_vedkommende_minister_tittel = True
+        
+        et_sporsmaal = (
+                #    sesjonid,                              #alt ok
+                #    spor.versjon.text,                     #alt ok
+                #    spor.besvart_av.id.text,               #alt ok
+                #    spor.besvart_av_minister_id.text,      #alt ok
+                #    spor.besvart_av_minister_tittel.text,  #alt ok
+                #    spor.besvart_dato.text,                #alt ok
+                #    pa_vegne_av,                           #alt ok
+                #    besvart_pa_vegne_av_minister_id,       #alt ok
+                #    besvart_pa_vegne_av_minister_tittel,   #alt ok
+                #    spor.datert_dato.text,                 #alt ok
+                    spor.emne_liste,                # her mangler det ting
+                #    spor.flyttet_til.text,                 #alt ok # "ikke spesifisert" er default.. "rette_vedkommende" brukes når ting er flyttet
+                    spor.fremsatt_av_annen.text,    # skjer det noe her _ever_??
+                    spor.id.text,   #dette er feil...
+                #    rette_vedkommende,                     #alt ok
+                    rette_vedkommende_minister_id,
+                    rette_vedkommende_minister_tittel,
+                    spor.sendt_dato.text,
+                    spor.sesjon_id.text,
+                #   spor.sporsmal_fra,  #denne kan kuttes ned mer ref til ID folkevalgte 1:n(?)
+                #   spor.sporsmal_nummer.text,              #alt ok (her er det kompositte nøkler igjen. spørsmålsnummer må være pr år (sesjon, antageligvis))
+                #   spor.sporsmal_til,
+                #   spor.sporsmal_til_minister_id,
+                #   spor.sporsmal_til_minister_tittel,
+                #    spor.status.text,                      #alt ok
+                #   spor.tittel.text,                       #alt ok
+                #   spor.type.text                          #alt ok
+                    )
+        print et_sporsmaal
+    
+    #skriftligesporsmal: versjon, besvart_av (id erstatter mange), 
+    #besvart_av_minister_id, besvart_av_minister_tittel,  
+    #besvart_dato, besvart_pa_vegne_av (id eller nil)
+    # besvart_pa_vegne_av_minister_id (id eller nil)
+    # besvart_pa_vegne_av_minister_tittel (id eller nil)
+    # datert_dato, emne_liste (1:n?)
+    # flyttet_til??
+    # fremsatt_av_annen (id eller nil?)
+    # id
+    # rette_vedkommende ??
+    # rette_vedkommende_minister_id ??
+    # rette_vedkommende_minister_tittel ???
+    # sendt_dato, sesjon_id
+    # sporsmal_fra (1:n?) id erstatter mange                # kan skriftlige spørsmål bare stilles av folkevalgte??
+    # sporsmal_nummer
+    # sporsmal_til id erstatter mang                        # kan skriftlige spørsmål bare stilles til folkevalgte?
+    # sporsmal_til_minister_id
+    # sporsmal_til_minister_tittel, status, tittel, type
+
+def batch_fetch_alle_skriftligesporsmal():
+    """ auxiliary funksjon for å kjøre get_skriftligesporsmal for alle sesjoner """
+    cursor = conn.cursor() #    1.0 1986-10-01T00:00:00 1986-87 1987-09-30T23:59:59
+    cursor.execute("""SELECT id FROM sesjoner""")
+    results = cursor.fetchall()
+    for result in results[-4:]:     # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
+        print result[0]
+        get_skriftligesporsmal(result[0])
+        sys.exit("en holder..")
+    
 
 def get_saker(sesjonid):
     """ trenger relasjoner til tre (3) tabeller: 
@@ -302,11 +393,11 @@ def main():
     # get_voteringsforslag('1499')
     # get_voteringer('50135')
     # get_saker('2011-2012')    
-    # get_skriftligesporsmal('2011-2012')
+    batch_fetch_alle_skriftligesporsmal() # get_skriftligesporsmal('2011-2012')
     # get_interpellasjoner('2011-2012')
     # get_sporretimesporsmal('2011-2012')
     # get_dagensrepresentanter()
-    pass
+    #pass
     ## batch_fetch_alle_representanter() # kjører denne i batch (for each stortingsperiode):     ## get_representanter('2009-2013')
     ##get_alle_komiteer()
     ##batch_fetch_alle_kommiteer_pr_sessjon() # get_kommiteer('2011-2012')
