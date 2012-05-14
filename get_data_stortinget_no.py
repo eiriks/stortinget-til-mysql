@@ -18,7 +18,7 @@ import requests         # http://kennethreitz.com/requests-python-http-module.ht
 from bs4 import BeautifulSoup
 import xml.etree.cElementTree as et
 import MySQLdb
-conn = MySQLdb.connect(host = "localhost", user = "root", passwd = "root", db = "stortinget")
+conn = MySQLdb.connect(host = "localhost", user = "root", passwd = "root", db = "stortinget") # dette må du naturlig nok tilpasse din egen maskin..
 
 
 def get_stortingsperioder():
@@ -258,6 +258,7 @@ def batch_fetch_alle_representanter():
 def get_dagensrepresentanter():
     """ krever to tabeller: dagensrepresentanter, og folkevalgt_sitter_i_kommite """
     # skal jeg bale med lekasjoner til vara-plassene??
+    # dette er hovedsaklig redundant data, det eneste som er "nytt" er relaksjon til komiteer og vara-funksjoner....
     url = "http://data.stortinget.no/eksport/dagensrepresentanter"
     
     # skal bli databasetabell
@@ -278,11 +279,12 @@ def get_saker(sesjonid):
     """ trenger relasjoner til tre (3) tabeller: 
     - emne (1:n),                                                                           # har tbl : emne
     - komiteer (1:1) (alle eller kun denne sesjonens?, hvor skal det reffes?)               # har tbl : allekomiteer
-    - representanter (1:n) (alle, eller kun denne sesjonens?) (denne har jeg ikke)          # har tbl : ???
+    - representanter (1:n) (alle, eller kun denne sesjonens?)                               # har tbl : representanter
     """
     url = "http://data.stortinget.no/eksport/saker?sesjonid=%s" % (sesjonid)
 
 def get_voteringer(sakid):
+    # antar saker har voteringsid, som er det jeg trenger til de siste funksjonene (som virker rimelig)
     url = "http://data.stortinget.no/eksport/voteringer?sakid=%s" % (sakid)
 
 def get_voteringsforslag(voteringid):
@@ -304,7 +306,7 @@ def main():
     # get_interpellasjoner('2011-2012')
     # get_sporretimesporsmal('2011-2012')
     # get_dagensrepresentanter()
-    
+    pass
     ## batch_fetch_alle_representanter() # kjører denne i batch (for each stortingsperiode):     ## get_representanter('2009-2013')
     ##get_alle_komiteer()
     ##batch_fetch_alle_kommiteer_pr_sessjon() # get_kommiteer('2011-2012')
