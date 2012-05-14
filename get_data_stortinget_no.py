@@ -184,7 +184,32 @@ def get_alle_komiteer():
     conn.commit()
 
 def get_representanter(stortingsperiodeid):
+    """ """
     url = "http://data.stortinget.no/eksport/representanter?stortingsperiodeid=%s" % (stortingsperiodeid)
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content)
+    representanter = []
+    for rep in soup.find_all('representant'):
+        # ikke alle representanter har fylke (det er kanskje pussig, men dog.)
+        try:
+            fylkeid = rep.fylke.id.text
+        except:
+            fylkeid = ''          # noen bedre måte å indikere at det ikke er noen fylke på (på to bokstaver, eller NULL??)
+        representanter.append( (stortingsperiodeid, rep.id.text, rep.versjon.text, rep.doedsdato.text, rep.etternavn.text, rep.foedselsdato.text, rep.fornavn.text, rep.kjoenn.text, fylkeid, rep.parti.id.text) )
+    # representanter: stortingsperiodeid, versjon, doedsdato, etternavn, foedselsdato, fornavn, id, kjoenn, fylke_id, parti_id
+    cursor = conn.cursor()
+    cursor.executemany(""" insert IGNORE into representanter (stortingsperiodeid, id, versjon, doedsdato, etternavn, foedselsdato, fornavn, kjoenn, fylke_id, parti_id) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", representanter)
+    print "%s row(s) inserted (representanter) for perioden %s " % (cursor.rowcount, stortingsperiodeid)
+    conn.commit()
+
+def batch_fetch_alle_representanter():
+    """ auxiliary funksjon for å kjøre get_representanter for alle stortingsperioder """
+    cursor = conn.cursor() #    1.0 1986-10-01T00:00:00 1986-87 1987-09-30T23:59:59
+    cursor.execute("""SELECT id FROM stortingsperioder""")
+    results = cursor.fetchall()
+    for result in results:
+        get_representanter(result[0])
+    
 
 def get_dagensrepresentanter():
     """ krever to tabeller: dagensrepresentanter, og folkevalgt_sitter_i_kommite """
@@ -229,7 +254,8 @@ def main():
     # get_interpellasjoner('2011-2012')
     # get_sporretimesporsmal('2011-2012')
     # get_dagensrepresentanter()
-    # get_representanter('2009-2013')
+    ## get_representanter('2009-2013')
+    batch_fetch_alle_representanter()
     ##get_alle_komiteer()
     # get_kommiteer('2011-2012')
     ##get_alle_partier()
@@ -238,7 +264,7 @@ def main():
     ##get_emner()
     ##get_sesjoner()
     ##get_stortingsperioder()
-	#pass
+
 
 
 if __name__ == '__main__':
