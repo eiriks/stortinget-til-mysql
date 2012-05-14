@@ -278,6 +278,9 @@ def get_skriftligesporsmal(sesjonid):
     soup = BeautifulSoup(r.content)
     alle_sporsmaal = []
     for spor in soup.find_all('sporsmal'):
+        print spor
+        print spor.id
+        sys.exit('dø')
         try:
             pa_vegne_av = spor.besvart_pa_vegne_av.id.text
         except:
@@ -316,21 +319,21 @@ def get_skriftligesporsmal(sesjonid):
                 #    besvart_pa_vegne_av_minister_id,       #alt ok
                 #    besvart_pa_vegne_av_minister_tittel,   #alt ok
                 #    spor.datert_dato.text,                 #alt ok
-                    spor.emne_liste,                # her mangler det ting
-                #    spor.flyttet_til.text,                 #alt ok # "ikke spesifisert" er default.. "rette_vedkommende" brukes når ting er flyttet
-                    spor.fremsatt_av_annen.text,    # skjer det noe her _ever_??
-                    spor.id.text,   #dette er feil...
-                #    rette_vedkommende,                     #alt ok
-                    rette_vedkommende_minister_id,
-                    rette_vedkommende_minister_tittel,
-                    spor.sendt_dato.text,
-                    spor.sesjon_id.text,
-                #   spor.sporsmal_fra,  #denne kan kuttes ned mer ref til ID folkevalgte 1:n(?)
+                    spor.emne_liste,                                # her mangler det ting
+                #   spor.flyttet_til.text,                 #alt ok # "ikke spesifisert" er default.. "rette_vedkommende" brukes når ting er flyttet
+                    spor.fremsatt_av_annen.text,                    # skjer det noe her _ever_??
+                    spor.id,                                        #dette er feil... hvorfor tar den "spor.besvart_av.id.text" i stedet?
+                #   rette_vedkommende,                     #alt ok
+                #   rette_vedkommende_minister_id,         #alt ok
+                #   rette_vedkommende_minister_tittel,     #alt ok
+                #   spor.sendt_dato.text,                  #alt ok
+                #   spor.sesjon_id.text,                   #alt ok - nøkkel mot sesjoner
+                #   spor.sporsmal_fra.id.text,             #alt ok - så lenge det er 1:1, nøkkel mot representanter
                 #   spor.sporsmal_nummer.text,              #alt ok (her er det kompositte nøkler igjen. spørsmålsnummer må være pr år (sesjon, antageligvis))
-                #   spor.sporsmal_til,
-                #   spor.sporsmal_til_minister_id,
-                #   spor.sporsmal_til_minister_tittel,
-                #    spor.status.text,                      #alt ok
+                #   spor.sporsmal_til.id.text,             #alt ok - så lenge det er 1:1, nøkkel mot representanter
+                #   spor.sporsmal_til_minister_id.text,    #alt ok - nøkkel mot noe?
+                #   spor.sporsmal_til_minister_tittel.text,#alt ok -fulltekst ministertittel
+                #   spor.status.text,                       #alt ok
                 #   spor.tittel.text,                       #alt ok
                 #   spor.type.text                          #alt ok
                     )
