@@ -5,6 +5,10 @@ untitled.py
 
 Created by Eirik Stavelin on 2012-05-09.
 Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+
+Denne koden er å ansees som public domain ala MIT-lisensen eller "gjør-hva-du-vil,-men-ikke-klag-til-meg" lisensen.
+
+
 """
 
 import sys
