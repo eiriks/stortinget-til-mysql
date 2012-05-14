@@ -154,7 +154,29 @@ def get_fylker():
     conn.commit()
 
 def get_partier(sesjonid):
+    """ dette er de som er inne (aka over sperregrensen) per stortingsvalg. (tror jeg)"""
     url = "http://data.stortinget.no/eksport/partier?sesjonid=%s" % (sesjonid)
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content)
+    #print soup
+    partier = []
+    for parti in soup.find_all('parti'):
+        et_parti = (sesjonid, parti.versjon.text, parti.id.text, parti.navn.text)
+        partier.append(et_parti)
+    #print partier
+    cursor = conn.cursor()    
+    cursor.executemany(""" insert IGNORE into partier_per_sesjon (sesjonid, versjon, partiid, partinavn) values (%s, %s, %s, %s)""", partier)
+    print "%s row(s) inserted (partier) for sesjonen %s" % (cursor.rowcount, sesjonid)
+    conn.commit()
+
+def batch_fetch_alle_partier_pr_sessjon():
+    """ auxiliary funksjon for å kjøre get_partier for alle sessjoner """
+    cursor = conn.cursor() #    1.0 1986-10-01T00:00:00 1986-87 1987-09-30T23:59:59
+    cursor.execute("""SELECT id FROM sesjoner""")
+    results = cursor.fetchall()
+    for result in results:
+        get_partier(result[0])
+        #sys.exit("det holder med en runde")
 
 def get_alle_partier():
     url = "http://data.stortinget.no/eksport/allepartier"
@@ -170,6 +192,28 @@ def get_alle_partier():
 
 def get_kommiteer(sesjonid):
     url = "http://data.stortinget.no/eksport/komiteer?sesjonid=%s" % (sesjonid)
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content)
+    #print soup
+    kommiteer = []
+    for kom in soup.find_all('komite'):
+        komite = (sesjonid, kom.versjon.text, kom.id.text, kom.navn.text)
+        kommiteer.append(komite)
+    cursor = conn.cursor()
+    
+    cursor.executemany(""" insert IGNORE into kommiteer_per_sesjon (sesjonid, versjon, komiteid, komitenavn) values (%s, %s, %s, %s)""", kommiteer)
+    print "%s row(s) inserted (komiteer) i sesjon: %s" % (cursor.rowcount, sesjonid)
+    conn.commit()
+
+def batch_fetch_alle_kommiteer_pr_sessjon():
+    """ auxiliary funksjon for å kjøre get_kommiteer for alle sessjoner """
+    cursor = conn.cursor()
+    cursor.execute("""SELECT id FROM sesjoner""")
+    results = cursor.fetchall()
+    for result in results:
+        get_kommiteer(result[0])
+        #sys.exit("det holder med en runde")
+
 
 def get_alle_komiteer():
     url = "http://data.stortinget.no/eksport/allekomiteer"
@@ -213,7 +257,13 @@ def batch_fetch_alle_representanter():
 
 def get_dagensrepresentanter():
     """ krever to tabeller: dagensrepresentanter, og folkevalgt_sitter_i_kommite """
+    # skal jeg bale med lekasjoner til vara-plassene??
     url = "http://data.stortinget.no/eksport/dagensrepresentanter"
+    
+    # skal bli databasetabell
+    #dagensrepresentanter: id (erstatter: versjon, doedsdato, etternavn, foedselsdato, fornavn, kjoenn, fylke & parti), fast_vara_for, ref:(1:n) komiteer, vara_for (ukjent, alltid nil=true, sikkert en ref til representantid hvis aktuell? aka varchar(20).)
+    # og
+    #folkevalgt_sitter_i_kommite: folkvalgtid, komiteid, sesjonid
     
 def get_sporretimesporsmal(sesjonid):
     url = "http://data.stortinget.no/eksport/sporretimesporsmal?sesjonid=%s" % (sesjonid)
@@ -254,12 +304,12 @@ def main():
     # get_interpellasjoner('2011-2012')
     # get_sporretimesporsmal('2011-2012')
     # get_dagensrepresentanter()
-    ## get_representanter('2009-2013')
-    batch_fetch_alle_representanter()
+    
+    ## batch_fetch_alle_representanter() # kjører denne i batch (for each stortingsperiode):     ## get_representanter('2009-2013')
     ##get_alle_komiteer()
-    # get_kommiteer('2011-2012')
+    ##batch_fetch_alle_kommiteer_pr_sessjon() # get_kommiteer('2011-2012')
     ##get_alle_partier()
-    # get_partier('2011-2012')
+    ##batch_fetch_alle_partier_pr_sessjon() # get_partier('2011-2012')
     ##get_fylker()
     ##get_emner()
     ##get_sesjoner()
