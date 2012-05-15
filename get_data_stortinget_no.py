@@ -430,17 +430,17 @@ def get_saker(sesjonid):
         cursor = conn.cursor()
         for relasjon in sak_emne:
             cursor.execute(""" insert IGNORE into sak_emne (saksid, emneid) values (%s, %s)""", (sak.find("id", recursive=False).text, relasjon))
-            print "%s row(s) inserted (relasjon: sak-emne) saksid-emneid %s-%s " % (cursor.rowcount, sak.find("id", recursive=False).text.encode('utf8'),relasjon)
+            print "%s row(s) inserted (relasjon: sak-emne) saksid-emneid %s-%s " % (cursor.rowcount, sak.find("id", recursive=False).text.encode('utf8'), relasjon.encode('utf8'))
             conn.commit()
         for relasjon in sak_saksordfoerer:            
             cursor.execute(""" insert IGNORE into sak_saksordfoerer (saksid, saksordfoerer) values (%s, %s)""", (sak.find("id", recursive=False).text, relasjon))
-            print "%s row(s) inserted (relasjon: sak_saksordfoerer) saksid-representantid %s-%s " % (cursor.rowcount, sak.find("id", recursive=False).text.encode('utf8'),relasjon)
+            print "%s row(s) inserted (relasjon: sak_saksordfoerer) saksid-representantid %s-%s " % (cursor.rowcount, sak.find("id", recursive=False).text.encode('utf8'),relasjon.encode('utf8'))
             conn.commit()
         # så selve saken:
         cursor.execute(""" insert IGNORE into saker (id, versjon, behandlet_sesjon_id, dokumentgruppe, henvisning, innstilling_id, komiteid, komitenavn, korttittel, sak_fremmet_id, sist_oppdatert_dato, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", en_sak)
         print "%s row(s) inserted (saker) for sesjonen %s, id %s " % (cursor.rowcount, sesjonid.encode('utf8'), sak.find("id", recursive=False).text.encode('utf8'))
         conn.commit()
-    print "ferdig med å sette inn saker for sesjonen %s" % (sesjonid)
+    print "ferdig med å sette inn saker for sesjonen %s" % (sesjonid.encode('utf8'))
                 
 def batch_fetch_alle_saker():
     """ auxiliary funksjon for å kjøre get_saker for alle sesjoner """
