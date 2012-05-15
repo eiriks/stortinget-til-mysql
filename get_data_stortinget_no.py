@@ -375,6 +375,9 @@ def get_saker(sesjonid):
     - representanter (1:n) (alle, eller kun denne sesjonens?)                               # har tbl : representanter
     """
     url = "http://data.stortinget.no/eksport/saker?sesjonid=%s" % (sesjonid)
+    #print url
+    # http://data.stortinget.no/eksport/saker?sesjonid=2009-2010
+    # http://data.stortinget.no/eksport/saker?sesjonid=2009-2010
     r = requests.get(url)
     soup = BeautifulSoup(r.content, "xml")
     #alle_sporsmaal = []
@@ -440,6 +443,8 @@ def get_saker(sesjonid):
         cursor.execute(""" insert IGNORE into saker (id, versjon, behandlet_sesjon_id, dokumentgruppe, henvisning, innstilling_id, komiteid, komitenavn, korttittel, sak_fremmet_id, sist_oppdatert_dato, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", en_sak)
         print "%s row(s) inserted (saker) for sesjonen %s, id %s " % (cursor.rowcount, sesjonid.encode('utf8'), sak.find("id", recursive=False).text.encode('utf8'))
         conn.commit()
+        #print en_sak
+        #sys.exit("dø")
     print "ferdig med å sette inn saker for sesjonen %s" % (sesjonid.encode('utf8'))
                 
 def batch_fetch_alle_saker():
@@ -448,12 +453,66 @@ def batch_fetch_alle_saker():
     cursor.execute("""SELECT id FROM sesjoner""")
     results = cursor.fetchall()
     for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
+        #print result[0]
         get_saker(result[0])
 
 
 def get_voteringer(sakid):
     # antar saker har voteringsid, som er det jeg trenger til de siste funksjonene (som virker rimelig)
     url = "http://data.stortinget.no/eksport/voteringer?sakid=%s" % (sakid)
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content, "xml")
+    #alle_sporsmaal = []
+    
+    #print soup.sak_id.text
+    voteringer = []
+    for vot in soup.find_all('sak_votering'):
+        votering = (
+        vot.sak_id.text,
+        vot.versjon.text,
+        vot.alternativ_votering_id.text,
+        vot.antall_for.text,
+        vot.antall_ikke_tilstede.text,
+        vot.antall_mot.text,
+        vot.behandlingsrekkefoelge.text,
+        vot.dagsorden_sak_nummer.text,
+        vot.fri_votering.text,
+        vot.kommentar.text,
+        vot.mote_kart_nummer.text,
+        vot.personlig_votering.text,
+        vot.president.id.text,
+        vot.vedtatt.text,
+        vot.votering_id.text,
+        vot.votering_metode.text,
+        vot.votering_resultat_type.text,
+        vot.votering_resultat_type_tekst.text,
+        vot.votering_tema.text,
+        vot.votering_tid.text
+        )
+        #print votering
+
+        # dette er en sjekk som feiler hvis det mangler data i xml'n
+        #print sakid,vot.sak_id.text
+        if int(sakid) == int(vot.sak_id.text):
+            # add voteringen til listen over voteringer for denne saken (samme sakid, i alle fall)
+            #print votering
+            voteringer.append(votering)
+    cursor = conn.cursor()
+    cursor.executemany(""" insert IGNORE into sak_votering (sak_id, versjon, alternativ_votering_id, antall_for, antall_ikke_tilstede, antall_mot, behandlingsrekkefoelge, dagsorden_sak_nummer, fri_votering, kommentar,mote_kart_nummer, personlig_votering, presidentid, vedtatt, votering_id, votering_metode, votering_resultat_type, votering_resultat_type_tekst, votering_tema, votering_tid) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", voteringer)
+    print "%s row(s) inserted - votering for saksid %s " % (cursor.rowcount, sakid)
+    conn.commit()
+    #sys.exit("stop")
+
+def batch_fetch_alle_voteringer():
+    """ auxiliary funksjon for å kjøre get_saker for alle sesjoner """
+    cursor = conn.cursor()
+    cursor.execute("""SELECT id FROM saker WHERE status = 'behandlet' ORDER BY id DESC""")
+    results = cursor.fetchall()
+    for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
+        #print result[0]
+        get_voteringer(result[0])
+
+
 
 def get_voteringsforslag(voteringid):
     url = "http://data.stortinget.no/eksport/voteringsforslag?voteringid=%s" % (voteringid)
@@ -468,8 +527,8 @@ def main():
     # get_voteringsresultat('1499')
     # get_voteringsvedtak('1499')
     # get_voteringsforslag('1499')
-    # get_voteringer('50135')
-    batch_fetch_alle_saker() # get_saker('2011-2012')    
+    batch_fetch_alle_voteringer() # get_voteringer('50135')
+    ##batch_fetch_alle_saker() # get_saker('2011-2012')    
     ## batch_fetch_alle_skriftligesporsmal() # get_skriftligesporsmal('2011-2012')
     # get_interpellasjoner('2011-2012')
     # get_sporretimesporsmal('2011-2012')
