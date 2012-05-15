@@ -276,18 +276,16 @@ def get_skriftligesporsmal(sesjonid):
     url = "http://data.stortinget.no/eksport/skriftligesporsmal?sesjonid=%s" % (sesjonid)
     r = requests.get(url)
     soup = BeautifulSoup(r.content, "xml")
-    alle_sporsmaal = []
+    #alle_sporsmaal = []
     for spor in soup.find_all('sporsmal'):
         try:
             pa_vegne_av = spor.besvart_pa_vegne_av.id.text
         except:
             pa_vegne_av = ''
-        
         try:
             besvart_pa_vegne_av_minister_id = spor.besvart_pa_vegne_av_minister_id.text
         except:
             besvart_pa_vegne_av_minister_id = ''
-        
         try: 
             besvart_pa_vegne_av_minister_tittel = spor.besvart_pa_vegne_av_minister_tittel.text
         except:
@@ -304,7 +302,6 @@ def get_skriftligesporsmal(sesjonid):
             rette_vedkommende_minister_tittel = spor.rette_vedkommende_minister_tittel.text
         except:
             rette_vedkommende_minister_tittel = ''#False
-        
         try:
             fremsatt_av_annen = spor.fremsatt_av_annen.id.text
             # her er også andre variabler relavant:
@@ -347,27 +344,28 @@ def get_skriftligesporsmal(sesjonid):
                     spor.type.text                          #alt ok
                     )
         #print et_sporsmaal
-        alle_sporsmaal.append(et_sporsmaal)
-        #print et_sporsmaal
-    # re connect??
-    conn = MySQLdb.connect(host = "localhost", user = "root", passwd = "root", db = "stortinget", charset='utf8') # dette må du naturlig nok tilpasse din egen maskin..
-    cursor = conn.cursor()
-    cursor.executemany(""" insert IGNORE into skriftligesporsmal (id, sesjonid, versjon, besvart_av, besvart_av_minister_id, besvart_av_minister_tittel, besvart_dato, pa_vegne_av, besvart_pa_vegne_av_minister_id, besvart_pa_vegne_av_minister_tittel, datert_dato, flyttet_til, fremsatt_av_annen, rette_vedkommende, rette_vedkommende_minister_id, rette_vedkommende_minister_tittel, sendt_dato, sporsmal_fra, sporsmal_nummer, sporsmal_til, sporsmal_til_minister_id, sporsmal_til_minister_tittel, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s)""", alle_sporsmaal)
-    print "%s row(s) inserted (skriftlige spørsmål) for sesjonen %s " % (cursor.rowcount, sesjonid)
-    conn.commit()
-    
-    #(u'1663', '1996-97', u'1.0', u'JK', u'FD', u'forsvarsministeren', u'1997-04-30T00:00:00', '', '', '', u'1997-04-23T00:00:00', u'ikke_spesifisert', False, False, '', '', u'1997-04-24T00:00:00', u'RKB', u'116', u'JK', u'FD', u'forsvarsministeren', u'besvart', u'"Den siste tiden er det blitt avsl\xf8rt at USA hadde vide fullmakter n\xe5r det gjaldt bruk av atomv\xe5pen fra norsk jord. Det skal ogs\xe5 ha eksistert installasjoner i Norge for lagring og bruk av atomv\xe5pen. Kan Forsvarsministeren gi en fullstendig oversikt over hvilke avtaler som har eksistert mellom Norge og USA n\xe5r det gjelder lagring og bruk av atomv\xe5pen, og om det fortsatt finnes avtaler som gir USA fullmakt eller p\xe5 annen m\xe5te anledning til \xe5 lagre eller bruke atomv\xe5pen i Norge?"', u'skriftlig_sporsmal')
-
+        #alle_sporsmaal.append(et_sporsmaal)
+        # reconnect?? fikk stadige "_mysql_exceptions.OperationalError: (2006, 'MySQL server has gone away')"-feil, reconnect ser ut til å funke..
+        # når det er veldig mange får jeg en time-out feil. prøver derfor en insert for hvert eneste spørsmål. (størrelsen på den akkumelerte listen blir større en max-verdien min..)
+        cursor = conn.cursor()
+        cursor.execute(""" insert IGNORE into skriftligesporsmal (id, sesjonid, versjon, besvart_av, besvart_av_minister_id, besvart_av_minister_tittel, besvart_dato, pa_vegne_av, besvart_pa_vegne_av_minister_id, besvart_pa_vegne_av_minister_tittel, datert_dato, flyttet_til, fremsatt_av_annen, rette_vedkommende, rette_vedkommende_minister_id, rette_vedkommende_minister_tittel, sendt_dato, sporsmal_fra, sporsmal_nummer, sporsmal_til, sporsmal_til_minister_id, sporsmal_til_minister_tittel, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s)""", et_sporsmaal)
+        print "%s row(s) inserted (skriftlige spørsmål) for sesjonen %s, id %s " % (cursor.rowcount, sesjonid.encode('utf8'), spor.find("id", recursive=False).text.encode('utf8'))
+        conn.commit()
+    # cursor = conn.cursor()
+    # cursor.executemany(""" insert IGNORE into skriftligesporsmal (id, sesjonid, versjon, besvart_av, besvart_av_minister_id, besvart_av_minister_tittel, besvart_dato, pa_vegne_av, besvart_pa_vegne_av_minister_id, besvart_pa_vegne_av_minister_tittel, datert_dato, flyttet_til, fremsatt_av_annen, rette_vedkommende, rette_vedkommende_minister_id, rette_vedkommende_minister_tittel, sendt_dato, sporsmal_fra, sporsmal_nummer, sporsmal_til, sporsmal_til_minister_id, sporsmal_til_minister_tittel, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s)""", alle_sporsmaal)
+    # print "%s row(s) inserted (skriftlige spørsmål) for sesjonen %s " % (cursor.rowcount, sesjonid.encode('utf8'))
+    # conn.commit()
+    print "Ferdig med sesjon %s" % (sesjonid)
 
 def batch_fetch_alle_skriftligesporsmal():
     """ auxiliary funksjon for å kjøre get_skriftligesporsmal for alle sesjoner """
     cursor = conn.cursor() #    1.0 1986-10-01T00:00:00 1986-87 1987-09-30T23:59:59
     cursor.execute("""SELECT id FROM sesjoner""")
     results = cursor.fetchall()
-    for result in results[-4:]: #     # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
-        print result[0]
+    for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
+        #print result[0]
         get_skriftligesporsmal(result[0])
-        sys.exit("en holder..")
+        #sys.exit("en holder..")
     
 
 def get_saker(sesjonid):
@@ -377,6 +375,81 @@ def get_saker(sesjonid):
     - representanter (1:n) (alle, eller kun denne sesjonens?)                               # har tbl : representanter
     """
     url = "http://data.stortinget.no/eksport/saker?sesjonid=%s" % (sesjonid)
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content, "xml")
+    #alle_sporsmaal = []
+    for sak in soup.find_all('sak'):
+        try:
+            komiteid = sak.komite.id.text
+        except:
+            komiteid = ''
+        try:
+            komitenavn = sak.komite.navn.text
+        except:
+            komitenavn = ''
+        
+        sak_emne = []
+        if(len(sak.find_all('emne'))>0):             #alle ha emne, bare noen har ref (<emne/> kan være en tom tagg)
+            for ref in sak.find_all('emne'):
+                sak_emne.append(ref.id.text)
+        #print sak_emne
+        
+        # if (len(ref_til_emne) >10):                                                   # enn så sprøtt et ser ut, så stemmer det at noen omhandler bråtevis med emner..
+        #     print sak.behandlet_sesjon_id.text, sak.find("id", recursive=False).text
+        
+        sak_saksordfoerer = []
+        if(len(sak.find_all('representant'))>0):                                        # NB: det går hvist an at det ikke er noen saksordfører også...
+            for ref in sak.find_all('representant'):
+                sak_saksordfoerer.append(ref.id.text)
+            #print len(sak.find_all('representant')), sak.find("id", recursive=False).text
+        #print sak_saksordfoerer
+        
+        en_sak = (
+        #sak.id.text,                       #alt ok - ser riktig ut. nei
+        sak.find("id", recursive=False).text,
+        sak.versjon.text,                  #alt ok
+        sak.behandlet_sesjon_id.text,      #alt ok 
+        sak.dokumentgruppe.text,           #alt ok
+#        #sak.emne_liste,                    #           liste med ider til emner
+        sak.henvisning.text,               #alt ok
+        sak.innstilling_id.text,           #alt ok - ser rett ut - hva er dette egentlig? ref til hva?          blir ofte "-1" hva er det?
+        komiteid,                          #alt ok
+        komitenavn,                        #alt ok - ref til allekomiteer eller komite_per_sesjon 
+        sak.korttittel.text,               #alt ok
+        sak.sak_fremmet_id.text,           #alt ok
+#        sak.saksordfoerer_liste,           #           liste med ider til representant(er) 
+        sak.sist_oppdatert_dato.text,      #alt ok
+        sak.status.text,                   #alt ok
+        sak.tittel.text,                   #alt ok
+        sak.type.text                      #alt ok
+        )
+        #print en_sak
+        
+        # forsøker en-og-en igjen, antar at det kan bli store datamengder her også...
+        #først relasjonene:
+        cursor = conn.cursor()
+        for relasjon in sak_emne:
+            cursor.execute(""" insert IGNORE into sak_emne (saksid, emneid) values (%s, %s)""", (sak.find("id", recursive=False).text, relasjon))
+            print "%s row(s) inserted (relasjon: sak-emne) saksid-emneid %s-%s " % (cursor.rowcount, sak.find("id", recursive=False).text.encode('utf8'),relasjon)
+            conn.commit()
+        for relasjon in sak_saksordfoerer:            
+            cursor.execute(""" insert IGNORE into sak_saksordfoerer (saksid, saksordfoerer) values (%s, %s)""", (sak.find("id", recursive=False).text, relasjon))
+            print "%s row(s) inserted (relasjon: sak_saksordfoerer) saksid-representantid %s-%s " % (cursor.rowcount, sak.find("id", recursive=False).text.encode('utf8'),relasjon)
+            conn.commit()
+        # så selve saken:
+        cursor.execute(""" insert IGNORE into saker (id, versjon, behandlet_sesjon_id, dokumentgruppe, henvisning, innstilling_id, komiteid, komitenavn, korttittel, sak_fremmet_id, sist_oppdatert_dato, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", en_sak)
+        print "%s row(s) inserted (saker) for sesjonen %s, id %s " % (cursor.rowcount, sesjonid.encode('utf8'), sak.find("id", recursive=False).text.encode('utf8'))
+        conn.commit()
+    print "ferdig med å sette inn saker for sesjonen %s" % (sesjonid)
+                
+def batch_fetch_alle_saker():
+    """ auxiliary funksjon for å kjøre get_saker for alle sesjoner """
+    cursor = conn.cursor()
+    cursor.execute("""SELECT id FROM sesjoner""")
+    results = cursor.fetchall()
+    for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
+        get_saker(result[0])
+
 
 def get_voteringer(sakid):
     # antar saker har voteringsid, som er det jeg trenger til de siste funksjonene (som virker rimelig)
@@ -396,8 +469,8 @@ def main():
     # get_voteringsvedtak('1499')
     # get_voteringsforslag('1499')
     # get_voteringer('50135')
-    # get_saker('2011-2012')    
-    batch_fetch_alle_skriftligesporsmal() # get_skriftligesporsmal('2011-2012')
+    batch_fetch_alle_saker() # get_saker('2011-2012')    
+    ## batch_fetch_alle_skriftligesporsmal() # get_skriftligesporsmal('2011-2012')
     # get_interpellasjoner('2011-2012')
     # get_sporretimesporsmal('2011-2012')
     # get_dagensrepresentanter()
