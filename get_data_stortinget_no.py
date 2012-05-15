@@ -18,7 +18,7 @@ import requests         # http://kennethreitz.com/requests-python-http-module.ht
 from bs4 import BeautifulSoup
 import xml.etree.cElementTree as et
 import MySQLdb
-conn = MySQLdb.connect(host = "localhost", user = "root", passwd = "root", db = "stortinget") # dette må du naturlig nok tilpasse din egen maskin..
+conn = MySQLdb.connect(host = "localhost", user = "root", passwd = "root", db = "stortinget", charset='utf8') # dette må du naturlig nok tilpasse din egen maskin..
 
 
 def get_stortingsperioder():
@@ -275,12 +275,9 @@ def get_interpellasjoner(sesjonid):
 def get_skriftligesporsmal(sesjonid):
     url = "http://data.stortinget.no/eksport/skriftligesporsmal?sesjonid=%s" % (sesjonid)
     r = requests.get(url)
-    soup = BeautifulSoup(r.content)
+    soup = BeautifulSoup(r.content, "xml")
     alle_sporsmaal = []
     for spor in soup.find_all('sporsmal'):
-        print spor
-        print spor.id
-        sys.exit('dø')
         try:
             pa_vegne_av = spor.besvart_pa_vegne_av.id.text
         except:
@@ -298,72 +295,76 @@ def get_skriftligesporsmal(sesjonid):
         try:
             rette_vedkommende = spor.rette_vedkommende.id.text
         except:
-            rette_vedkommende = True
+            rette_vedkommende = '' #False
         try:
             rette_vedkommende_minister_id = spor.rette_vedkommende_minister_id.text
         except:
-            rette_vedkommende_minister_id =True
+            rette_vedkommende_minister_id = ''#False
         try:
             rette_vedkommende_minister_tittel = spor.rette_vedkommende_minister_tittel.text
         except:
-            rette_vedkommende_minister_tittel = True
+            rette_vedkommende_minister_tittel = ''#False
+        
+        try:
+            fremsatt_av_annen = spor.fremsatt_av_annen.id.text
+            # her er også andre variabler relavant:
+            # versjon, doedsdato, etternavn, foedselsdato, fornavn, id, kjoenn, (+ fylke & parti, som kan være 'nil' her...)
+        except:
+            fremsatt_av_annen = ''#False
         
         et_sporsmaal = (
-                #    sesjonid,                              #alt ok
-                #    spor.versjon.text,                     #alt ok
-                #    spor.besvart_av.id.text,               #alt ok
-                #    spor.besvart_av_minister_id.text,      #alt ok
-                #    spor.besvart_av_minister_tittel.text,  #alt ok
-                #    spor.besvart_dato.text,                #alt ok
-                #    pa_vegne_av,                           #alt ok
-                #    besvart_pa_vegne_av_minister_id,       #alt ok
-                #    besvart_pa_vegne_av_minister_tittel,   #alt ok
-                #    spor.datert_dato.text,                 #alt ok
-                    spor.emne_liste,                                # her mangler det ting
-                #   spor.flyttet_til.text,                 #alt ok # "ikke spesifisert" er default.. "rette_vedkommende" brukes når ting er flyttet
-                    spor.fremsatt_av_annen.text,                    # skjer det noe her _ever_??
-                    spor.id,                                        #dette er feil... hvorfor tar den "spor.besvart_av.id.text" i stedet?
-                #   rette_vedkommende,                     #alt ok
-                #   rette_vedkommende_minister_id,         #alt ok
-                #   rette_vedkommende_minister_tittel,     #alt ok
-                #   spor.sendt_dato.text,                  #alt ok
-                #   spor.sesjon_id.text,                   #alt ok - nøkkel mot sesjoner
-                #   spor.sporsmal_fra.id.text,             #alt ok - så lenge det er 1:1, nøkkel mot representanter
-                #   spor.sporsmal_nummer.text,              #alt ok (her er det kompositte nøkler igjen. spørsmålsnummer må være pr år (sesjon, antageligvis))
-                #   spor.sporsmal_til.id.text,             #alt ok - så lenge det er 1:1, nøkkel mot representanter
-                #   spor.sporsmal_til_minister_id.text,    #alt ok - nøkkel mot noe?
-                #   spor.sporsmal_til_minister_tittel.text,#alt ok -fulltekst ministertittel
-                #   spor.status.text,                       #alt ok
-                #   spor.tittel.text,                       #alt ok
-                #   spor.type.text                          #alt ok
+                    ##    spor.id.text,                                    #dette er feil se http://stackoverflow.com/questions/10592462/parsing-xml-with-beautifulsoup-multiple-tags-with-same-name-how-to-find-the-r
+                    spor.find("id", recursive=False).text,  #alt ok
+                    #spor.sesjon_id.text,                   #alt ok - nøkkel mot sesjoner - diplikat av input. jeg bruker innput
+                    sesjonid,                              #alt ok
+                    spor.versjon.text,                     #alt ok
+                    spor.besvart_av.id.text,               #alt ok
+                    spor.besvart_av_minister_id.text,      #alt ok
+                    spor.besvart_av_minister_tittel.text,  #alt ok
+                    spor.besvart_dato.text,                #alt ok
+                    pa_vegne_av,                           #alt ok
+                    besvart_pa_vegne_av_minister_id,       #alt ok
+                    besvart_pa_vegne_av_minister_tittel,   #alt ok
+                    spor.datert_dato.text,                 #alt ok
+                    #spor.emne_liste,                                
+                    # denne brukes ikke i skriftligesporsmal, kan være 1:n på de andre, står det i manualen..
+                    spor.flyttet_til.text,                 #alt ok # "ikke spesifisert" er default.. "rette_vedkommende" brukes når ting er flyttet
+                    fremsatt_av_annen,                    
+                    # dette er en ref til representanter igjen?
+                    # nei - dette er folk som IKKE er representanter (aka finnes i representanter-tabellen)
+                    # skal jeg lagre dette??
+                    rette_vedkommende,                     #alt ok
+                    rette_vedkommende_minister_id,         #alt ok
+                    rette_vedkommende_minister_tittel,     #alt ok
+                    spor.sendt_dato.text,                  #alt ok
+                    spor.sporsmal_fra.id.text,             #alt ok - så lenge det er 1:1, nøkkel mot representanter     # kan skriftlige spørsmål bare stilles av folkevalgte??
+                    spor.sporsmal_nummer.text,              #alt ok (her er det kompositte nøkler igjen. spørsmålsnummer må være pr år (sesjon, antageligvis))
+                    spor.sporsmal_til.id.text,             #alt ok - så lenge det er 1:1, nøkkel mot representanter     # kan skriftlige spørsmål bare stilles til folkevalgte?
+                    spor.sporsmal_til_minister_id.text,    #alt ok - nøkkel mot noe?
+                    spor.sporsmal_til_minister_tittel.text,#alt ok -fulltekst ministertittel
+                    spor.status.text,                       #alt ok
+                    spor.tittel.text,                       #alt ok
+                    spor.type.text                          #alt ok
                     )
-        print et_sporsmaal
+        #print et_sporsmaal
+        alle_sporsmaal.append(et_sporsmaal)
+        #print et_sporsmaal
+    # re connect??
+    conn = MySQLdb.connect(host = "localhost", user = "root", passwd = "root", db = "stortinget", charset='utf8') # dette må du naturlig nok tilpasse din egen maskin..
+    cursor = conn.cursor()
+    cursor.executemany(""" insert IGNORE into skriftligesporsmal (id, sesjonid, versjon, besvart_av, besvart_av_minister_id, besvart_av_minister_tittel, besvart_dato, pa_vegne_av, besvart_pa_vegne_av_minister_id, besvart_pa_vegne_av_minister_tittel, datert_dato, flyttet_til, fremsatt_av_annen, rette_vedkommende, rette_vedkommende_minister_id, rette_vedkommende_minister_tittel, sendt_dato, sporsmal_fra, sporsmal_nummer, sporsmal_til, sporsmal_til_minister_id, sporsmal_til_minister_tittel, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s)""", alle_sporsmaal)
+    print "%s row(s) inserted (skriftlige spørsmål) for sesjonen %s " % (cursor.rowcount, sesjonid)
+    conn.commit()
     
-    #skriftligesporsmal: versjon, besvart_av (id erstatter mange), 
-    #besvart_av_minister_id, besvart_av_minister_tittel,  
-    #besvart_dato, besvart_pa_vegne_av (id eller nil)
-    # besvart_pa_vegne_av_minister_id (id eller nil)
-    # besvart_pa_vegne_av_minister_tittel (id eller nil)
-    # datert_dato, emne_liste (1:n?)
-    # flyttet_til??
-    # fremsatt_av_annen (id eller nil?)
-    # id
-    # rette_vedkommende ??
-    # rette_vedkommende_minister_id ??
-    # rette_vedkommende_minister_tittel ???
-    # sendt_dato, sesjon_id
-    # sporsmal_fra (1:n?) id erstatter mange                # kan skriftlige spørsmål bare stilles av folkevalgte??
-    # sporsmal_nummer
-    # sporsmal_til id erstatter mang                        # kan skriftlige spørsmål bare stilles til folkevalgte?
-    # sporsmal_til_minister_id
-    # sporsmal_til_minister_tittel, status, tittel, type
+    #(u'1663', '1996-97', u'1.0', u'JK', u'FD', u'forsvarsministeren', u'1997-04-30T00:00:00', '', '', '', u'1997-04-23T00:00:00', u'ikke_spesifisert', False, False, '', '', u'1997-04-24T00:00:00', u'RKB', u'116', u'JK', u'FD', u'forsvarsministeren', u'besvart', u'"Den siste tiden er det blitt avsl\xf8rt at USA hadde vide fullmakter n\xe5r det gjaldt bruk av atomv\xe5pen fra norsk jord. Det skal ogs\xe5 ha eksistert installasjoner i Norge for lagring og bruk av atomv\xe5pen. Kan Forsvarsministeren gi en fullstendig oversikt over hvilke avtaler som har eksistert mellom Norge og USA n\xe5r det gjelder lagring og bruk av atomv\xe5pen, og om det fortsatt finnes avtaler som gir USA fullmakt eller p\xe5 annen m\xe5te anledning til \xe5 lagre eller bruke atomv\xe5pen i Norge?"', u'skriftlig_sporsmal')
+
 
 def batch_fetch_alle_skriftligesporsmal():
     """ auxiliary funksjon for å kjøre get_skriftligesporsmal for alle sesjoner """
     cursor = conn.cursor() #    1.0 1986-10-01T00:00:00 1986-87 1987-09-30T23:59:59
     cursor.execute("""SELECT id FROM sesjoner""")
     results = cursor.fetchall()
-    for result in results[-4:]:     # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
+    for result in results[-4:]: #     # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
         print result[0]
         get_skriftligesporsmal(result[0])
         sys.exit("en holder..")
