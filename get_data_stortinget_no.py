@@ -550,12 +550,9 @@ def get_voteringsforslag(voteringid):
 def batch_fetch_alle_voteringsforslag():
     """ auxiliary funksjon for å kjøre get_saker for alle sesjoner """
     cursor = conn.cursor()
-    cursor.execute("""SELECT DISTINCT votering_id FROM sak_votering""")             #hvorfor må denne være distinkt? kan flere saker ha samme votering_id? eller er det redundans i sak_votering-tabellen?
+    cursor.execute("""SELECT DISTINCT votering_id FROM sak_votering""")     #hvorfor må denne være distinkt? kan flere saker ha samme votering_id? eller er det redundans i sak_votering-tabellen?
     results = cursor.fetchall()
-    #print len(results)
-    for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
-        #pass
-        #print result[0]
+    for result in results:
         time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_voteringsforslag(result[0])
 
@@ -575,7 +572,6 @@ def main():
     # get_interpellasjoner('2011-2012')
     # get_sporretimesporsmal('2011-2012')
     # get_dagensrepresentanter()
-    #pass
     ## batch_fetch_alle_representanter() # kjører denne i batch (for each stortingsperiode):     ## get_representanter('2009-2013')
     ##get_alle_komiteer()
     ##batch_fetch_alle_kommiteer_pr_sessjon() # get_kommiteer('2011-2012')
@@ -585,6 +581,7 @@ def main():
     ##get_emner()
     ##get_sesjoner()
     ##get_stortingsperioder()
+    pass
 
 
 
