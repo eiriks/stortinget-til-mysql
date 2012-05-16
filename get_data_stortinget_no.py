@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-untitled.py
+get_data_stortinget_no.py
 
 Created by Eirik Stavelin on 2012-05-09.
-Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+Copyright (c) 2012 infomedia UiB. All rights reserved.
 
 Denne koden er å ansees som public domain ala MIT-lisensen eller "gjør-hva-du-vil,-men-ikke-klag-til-meg" lisensen.
-
-
 """
 
 import sys
@@ -269,9 +267,16 @@ def get_dagensrepresentanter():
     
 def get_sporretimesporsmal(sesjonid):
     url = "http://data.stortinget.no/eksport/sporretimesporsmal?sesjonid=%s" % (sesjonid)
+    # ===========================
+    # = her gjenstår det arbeid =
+    # ===========================
 
 def get_interpellasjoner(sesjonid):
     url = "http://data.stortinget.no/eksport/interpellasjoner?sesjonid=%s" % (sesjonid)
+    # ===========================
+    # = her gjenstår det arbeid =
+    # ===========================
+
 
 def get_skriftligesporsmal(sesjonid):
     url = "http://data.stortinget.no/eksport/skriftligesporsmal?sesjonid=%s" % (sesjonid)
@@ -558,9 +563,17 @@ def batch_fetch_alle_voteringsforslag():
 
 def get_voteringsvedtak(voteringid):
     url = "http://data.stortinget.no/eksport/voteringsvedtak?voteringid=%s" % (voteringid)
+    # ===========================
+    # = her gjenstår det arbeid =
+    # ===========================
+    
 
 def get_voteringsresultat(voteringid):
     url = "http://data.stortinget.no/eksport/voteringsresultat?VoteringId=%s" % (voteringid)
+    # ===========================
+    # = her gjenstår det arbeid =
+    # ===========================
+    
 
 def main():
     # get_voteringsresultat('1499')
