@@ -15,6 +15,7 @@ import sys
 import os
 import requests         # http://kennethreitz.com/requests-python-http-module.html
 #import json
+import time
 from bs4 import BeautifulSoup
 import xml.etree.cElementTree as et
 import MySQLdb
@@ -462,9 +463,7 @@ def get_voteringer(sakid):
     url = "http://data.stortinget.no/eksport/voteringer?sakid=%s" % (sakid)
     r = requests.get(url)
     soup = BeautifulSoup(r.content, "xml")
-    #alle_sporsmaal = []
     
-    #print soup.sak_id.text
     voteringer = []
     for vot in soup.find_all('sak_votering'):
         votering = (
@@ -490,7 +489,7 @@ def get_voteringer(sakid):
         vot.votering_tid.text
         )
         #print votering
-
+        
         # dette er en sjekk som feiler hvis det mangler data i xml'n
         #print sakid,vot.sak_id.text
         if int(sakid) == int(vot.sak_id.text):
@@ -510,12 +509,49 @@ def batch_fetch_alle_voteringer():
     results = cursor.fetchall()
     for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
         #print result[0]
+        time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_voteringer(result[0])
 
 
 
 def get_voteringsforslag(voteringid):
+    """ dette er forslagene som kanskje ledet til en votering?  """
     url = "http://data.stortinget.no/eksport/voteringsforslag?voteringid=%s" % (voteringid)
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content, "xml")
+    voteringid_fra_xml = soup.votering_id.text
+    vuredringsforslags_liste = []
+    for votf in soup.find_all('voteringsforslag'):
+        voteringsforslag = (
+        voteringid_fra_xml,
+        votf.versjon.text,
+        votf.forslag_betegnelse.text,
+        votf.forslag_betegnelse_kort.text,
+        votf.forslag_id.text,
+        votf.forslag_levert_av_representant.text,
+        votf.forslag_paa_vegne_av_tekst.text,
+        votf.forslag_sorteringsnummer.text,
+        votf.forslag_tekst.text,
+        votf.forslag_type.text
+        )
+        vuredringsforslags_liste.append(voteringsforslag)
+        
+    print len(vuredringsforslags_liste)
+    #(u'2140', u'1.0', u'Komiteens tilr\xe5ding ', u'Komiteens tilr\xe5ding ', u'40037910', '', '', u'0', 
+    #u'<p>Dokument nr. 12:14 (2007\u20132008) \u2013 grunnlovsforslag\nfra Carl I. Hagen, \xd8ystein Djupedal, Hill-Marta Solberg, Olav Akselsen,\nBerit Br\xf8rby, Lodve Solholm, Svein Roald Hansen og Ivar Skulstad\nmed sikte p\xe5 \xe5 innf\xf8re en ordning med oppl\xf8sningsrett og positiv\nparlamentarisme (investitur) \u2013 samtlige alternativer \u2013 bifalles\nikke. </p>', 
+    #u'tilraading')
+    
+    
+    
+def batch_fetch_alle_voteringsforslag():
+    """ auxiliary funksjon for å kjøre get_saker for alle sesjoner """
+    cursor = conn.cursor()
+    cursor.execute("""SELECT votering_id FROM sak_votering""")
+    results = cursor.fetchall()
+    for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
+        #print result[0]
+        time.sleep(0.5)     #ikke stresse it@stortinget ?
+        get_voteringsforslag(result[0])
 
 def get_voteringsvedtak(voteringid):
     url = "http://data.stortinget.no/eksport/voteringsvedtak?voteringid=%s" % (voteringid)
@@ -526,8 +562,8 @@ def get_voteringsresultat(voteringid):
 def main():
     # get_voteringsresultat('1499')
     # get_voteringsvedtak('1499')
-    # get_voteringsforslag('1499')
-    batch_fetch_alle_voteringer() # get_voteringer('50135')
+    batch_fetch_alle_voteringsforslag() # get_voteringsforslag('1499')
+    ##batch_fetch_alle_voteringer() # get_voteringer('50135')
     ##batch_fetch_alle_saker() # get_saker('2011-2012')    
     ## batch_fetch_alle_skriftligesporsmal() # get_skriftligesporsmal('2011-2012')
     # get_interpellasjoner('2011-2012')
