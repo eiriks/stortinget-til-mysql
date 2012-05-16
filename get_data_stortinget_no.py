@@ -264,6 +264,11 @@ def get_dagensrepresentanter():
     #dagensrepresentanter: id (erstatter: versjon, doedsdato, etternavn, foedselsdato, fornavn, kjoenn, fylke & parti), fast_vara_for, ref:(1:n) komiteer, vara_for (ukjent, alltid nil=true, sikkert en ref til representantid hvis aktuell? aka varchar(20).)
     # og
     #folkevalgt_sitter_i_kommite: folkvalgtid, komiteid, sesjonid
+    # ===========================
+    # = her gjenstår det arbeid =
+    # ===========================
+    
+    # trenger jeg denne? hva skal den brukes til? Er ikke dette bare et utsnitt av representanter-tabellen der sesjon= "den stortingsperioden vi er i nå?"
     
 def get_sporretimesporsmal(sesjonid):
     url = "http://data.stortinget.no/eksport/sporretimesporsmal?sesjonid=%s" % (sesjonid)
