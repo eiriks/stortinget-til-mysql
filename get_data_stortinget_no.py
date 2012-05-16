@@ -523,11 +523,11 @@ def get_voteringsforslag(voteringid):
     vuredringsforslags_liste = []
     for votf in soup.find_all('voteringsforslag'):
         voteringsforslag = (
-        voteringid_fra_xml,
+        voteringid_fra_xml,                         # dette er det samme som input - aka voteringid
+        votf.forslag_id.text,
         votf.versjon.text,
         votf.forslag_betegnelse.text,
         votf.forslag_betegnelse_kort.text,
-        votf.forslag_id.text,
         votf.forslag_levert_av_representant.text,
         votf.forslag_paa_vegne_av_tekst.text,
         votf.forslag_sorteringsnummer.text,
@@ -536,21 +536,27 @@ def get_voteringsforslag(voteringid):
         )
         vuredringsforslags_liste.append(voteringsforslag)
         
-    print len(vuredringsforslags_liste)
-    #(u'2140', u'1.0', u'Komiteens tilr\xe5ding ', u'Komiteens tilr\xe5ding ', u'40037910', '', '', u'0', 
-    #u'<p>Dokument nr. 12:14 (2007\u20132008) \u2013 grunnlovsforslag\nfra Carl I. Hagen, \xd8ystein Djupedal, Hill-Marta Solberg, Olav Akselsen,\nBerit Br\xf8rby, Lodve Solholm, Svein Roald Hansen og Ivar Skulstad\nmed sikte p\xe5 \xe5 innf\xf8re en ordning med oppl\xf8sningsrett og positiv\nparlamentarisme (investitur) \u2013 samtlige alternativer \u2013 bifalles\nikke. </p>', 
-    #u'tilraading')
+    #print voteringid, voteringid_fra_xml
+    #print "\n"
+    #print len(vuredringsforslags_liste)
+    
+    cursor = conn.cursor()
+    cursor.executemany(""" insert IGNORE into voteringsforslag (voteringid, forslag_id, versjon, forslag_betegnelse, forslag_betegnelse_kort, forslag_levert_av_representant, forslag_paa_vegne_av_tekst, forslag_sorteringsnummer, forslag_tekst, forslag_type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", vuredringsforslags_liste)
+    print "%s row(s) inserted - voteringsforslag for votering %s " % (cursor.rowcount, voteringid)
+    conn.commit()
     
     
     
 def batch_fetch_alle_voteringsforslag():
     """ auxiliary funksjon for å kjøre get_saker for alle sesjoner """
     cursor = conn.cursor()
-    cursor.execute("""SELECT votering_id FROM sak_votering""")
+    cursor.execute("""SELECT DISTINCT votering_id FROM sak_votering""")             #hvorfor må denne være distinkt? kan flere saker ha samme votering_id? eller er det redundans i sak_votering-tabellen?
     results = cursor.fetchall()
+    #print len(results)
     for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
+        #pass
         #print result[0]
-        time.sleep(0.5)     #ikke stresse it@stortinget ?
+        time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_voteringsforslag(result[0])
 
 def get_voteringsvedtak(voteringid):
