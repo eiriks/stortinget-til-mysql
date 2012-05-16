@@ -268,7 +268,7 @@ def get_dagensrepresentanter():
     # = her gjenstår det arbeid =
     # ===========================
     
-    # trenger jeg denne? hva skal den brukes til? Er ikke dette bare et utsnitt av representanter-tabellen der sesjon= "den stortingsperioden vi er i nå?"
+    # trenger jeg denne? hva skal den brukes til? Er ikke dette bare et utsnitt av representanter-tabellen der sesjon= "den stortingsperioden vi er i nå"? 
     
 def get_sporretimesporsmal(sesjonid):
     url = "http://data.stortinget.no/eksport/sporretimesporsmal?sesjonid=%s" % (sesjonid)
@@ -443,6 +443,9 @@ def get_saker(sesjonid):
         #først relasjonene:
         cursor = conn.cursor()
         for relasjon in sak_emne:
+            # ===============================================================
+            # = her tor jeg det er noe feil, det er kun 7 rader i databasen =
+            # ===============================================================
             cursor.execute(""" insert IGNORE into sak_emne (saksid, emneid) values (%s, %s)""", (sak.find("id", recursive=False).text, relasjon))
             print "%s row(s) inserted (relasjon: sak-emne) saksid-emneid %s-%s " % (cursor.rowcount, sak.find("id", recursive=False).text.encode('utf8'), relasjon.encode('utf8'))
             conn.commit()
@@ -554,9 +557,8 @@ def get_voteringsforslag(voteringid):
     cursor.executemany(""" insert IGNORE into voteringsforslag (voteringid, forslag_id, versjon, forslag_betegnelse, forslag_betegnelse_kort, forslag_levert_av_representant, forslag_paa_vegne_av_tekst, forslag_sorteringsnummer, forslag_tekst, forslag_type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", vuredringsforslags_liste)
     print "%s row(s) inserted - voteringsforslag for votering %s " % (cursor.rowcount, voteringid)
     conn.commit()
-    
-    
-    
+
+
 def batch_fetch_alle_voteringsforslag():
     """ auxiliary funksjon for å kjøre get_saker for alle sesjoner """
     cursor = conn.cursor()
