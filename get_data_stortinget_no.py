@@ -764,10 +764,41 @@ def batch_fetch_alle_voteringsforslag():
 
 def get_voteringsvedtak(voteringid):
     url = "http://data.stortinget.no/eksport/voteringsvedtak?voteringid=%s" % (voteringid)
-    # ===========================
-    # = her gjenstår det arbeid =
-    # ===========================
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content, "xml")
+    voteringid_fra_xml = soup.votering_id.text
+    voteringsvedtak_liste = []
+    for votv in soup.find_all('voteringsvedtak'):
+        
+        # ========================================
+        # = hvorfor får jeg ikke teksten med???? =
+        # ========================================
+        try:
+            vedtak_text = votv.vedtak_text
+        except:
+            vedtak_text = ''
+        
+        en_voteringsvedtak = (
+        voteringid_fra_xml,
+        votv.versjon.text,
+        votv.vedtak_kode.text,
+        votv.vedtak_kommentar.text,
+        votv.vedtak_nummer.text,
+        votv.vedtak_referanse.text,
+        vedtak_text
+        )
+        print en_voteringsvedtak
+    print voteringid, len(soup.find_all('voteringsvedtak'))
     
+def batch_fetch_alle_voteringsvedtak():
+    """ auxiliary funksjon for å kjøre get_saker for alle sesjoner """
+    cursor = conn.cursor()
+    cursor.execute("""SELECT DISTINCT votering_id FROM sak_votering""")     #hvorfor må denne være distinkt? kan flere saker ha samme votering_id? eller er det redundans i sak_votering-tabellen?
+    results = cursor.fetchall()
+    for result in results:
+        #time.sleep(1.5)     #ikke stresse it@stortinget ?
+        get_voteringsvedtak(result[0])
+
 
 def get_voteringsresultat(voteringid):
     url = "http://data.stortinget.no/eksport/voteringsresultat?VoteringId=%s" % (voteringid)
@@ -778,15 +809,13 @@ def get_voteringsresultat(voteringid):
 
 def main():
     # get_voteringsresultat('1499')
-    # get_voteringsvedtak('1499')
+    batch_fetch_alle_voteringsvedtak() # get_voteringsvedtak('1499')
 #    batch_fetch_alle_voteringsforslag() # get_voteringsforslag('1499')
     ##batch_fetch_alle_voteringer() # get_voteringer('50135')
     ##batch_fetch_alle_saker() # get_saker('2011-2012')    
     ##batch_fetch_alle_skriftligesporsmal() # get_skriftligesporsmal('2011-2012')
-    
     ##batch_fetch_alle_interpellasjoner()     # get_interpellasjoner('2011-2012')
-    
-    batch_fetch_alle_sporretimesporsmal() # get_sporretimesporsmal('2011-2012')
+    ##batch_fetch_alle_sporretimesporsmal() # get_sporretimesporsmal('2011-2012')
     # get_dagensrepresentanter()
     ## batch_fetch_alle_representanter() # kjører denne i batch (for each stortingsperiode):     ## get_representanter('2009-2013')
     ##get_alle_komiteer()
