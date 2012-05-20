@@ -272,15 +272,204 @@ def get_dagensrepresentanter():
     
 def get_sporretimesporsmal(sesjonid):
     url = "http://data.stortinget.no/eksport/sporretimesporsmal?sesjonid=%s" % (sesjonid)
-    # ===========================
-    # = her gjenstår det arbeid =
-    # ===========================
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content, "xml")
+    for spor in soup.find_all('sporsmal'):
+        try:
+            pa_vegne_av = spor.besvart_pa_vegne_av.id.text
+        except:
+            pa_vegne_av = ''
+        try:
+            besvart_pa_vegne_av_minister_id = spor.besvart_pa_vegne_av_minister_id.text
+        except:
+            besvart_pa_vegne_av_minister_id = ''
+        try: 
+            besvart_pa_vegne_av_minister_tittel = spor.besvart_pa_vegne_av_minister_tittel.text
+        except:
+            besvart_pa_vegne_av_minister_tittel = ''
+        try:
+            rette_vedkommende = spor.rette_vedkommende.id.text
+        except:
+            rette_vedkommende = '' #False
+        try:
+            rette_vedkommende_minister_id = spor.rette_vedkommende_minister_id.text
+        except:
+            rette_vedkommende_minister_id = ''#False
+        try:
+            rette_vedkommende_minister_tittel = spor.rette_vedkommende_minister_tittel.text
+        except:
+            rette_vedkommende_minister_tittel = ''#False
+        try:
+            fremsatt_av_annen = spor.fremsatt_av_annen.id.text
+            # versjon, doedsdato, etternavn, foedselsdato, fornavn, id, kjoenn, (+ fylke & parti, som kan være 'nil' her...)
+        except:
+            fremsatt_av_annen = ''#False
+        
+        sporsmal_emne = []
+        if(len(spor.find_all('emne'))>0):
+            for ref in spor.find_all('emne'):
+                sporsmal_emne.append(ref.id.text)
+        
+        et_sporsmaal = (
+                    spor.find("id", recursive=False).text,  #alt ok se http://stackoverflow.com/questions/10592462/parsing-xml-with-beautifulsoup-multiple-tags-with-same-name-how-to-find-the-r
+                    #spor.sesjon_id.text,                   #alt ok - nøkkel mot sesjoner - diplikat av input. jeg bruker innput
+                    sesjonid,                              #alt ok
+                    spor.versjon.text,                     #alt ok
+                    spor.besvart_av.id.text,               #alt ok
+                    spor.besvart_av_minister_id.text,      #alt ok
+                    spor.besvart_av_minister_tittel.text,  #alt ok
+                    spor.besvart_dato.text,                #alt ok
+                    pa_vegne_av,                           #alt ok
+                    besvart_pa_vegne_av_minister_id,       #alt ok
+                    besvart_pa_vegne_av_minister_tittel,   #alt ok
+                    spor.datert_dato.text,                 #alt ok
+                    #spor.emne_liste,           # liste
+                    spor.flyttet_til.text,                 #alt ok # "ikke spesifisert" er default.. "rette_vedkommende" brukes når ting er flyttet
+                    fremsatt_av_annen,                    
+                    # dette er en ref til representanter igjen?
+                    # nei - dette er folk som IKKE er representanter (aka finnes i representanter-tabellen)
+                    # skal jeg lagre dette??
+                    rette_vedkommende,                     #alt ok
+                    rette_vedkommende_minister_id,         #alt ok
+                    rette_vedkommende_minister_tittel,     #alt ok
+                    spor.sendt_dato.text,                  #alt ok
+                    spor.sporsmal_fra.id.text,             #alt ok - så lenge det er 1:1, nøkkel mot representanter     # kan skriftlige spørsmål bare stilles av folkevalgte??
+                    spor.sporsmal_nummer.text,              #alt ok (her er det kompositte nøkler igjen. spørsmålsnummer må være pr år (sesjon, antageligvis))
+                    spor.sporsmal_til.id.text,             #alt ok - så lenge det er 1:1, nøkkel mot representanter     # kan skriftlige spørsmål bare stilles til folkevalgte?
+                    spor.sporsmal_til_minister_id.text,    #alt ok - nøkkel mot noe?
+                    spor.sporsmal_til_minister_tittel.text,#alt ok -fulltekst ministertittel
+                    spor.status.text,                       #alt ok
+                    spor.tittel.text,                       #alt ok
+                    spor.type.text                          #alt ok
+                    )
+        print "\t\t\t\t\t\t\t\t\t\t\t\t\t\t", spor.type.text
+        #print et_sporsmaal
+        #print sporsmal_emne
+        cursor = conn.cursor()
+        #insert into skriftligesporsmal (nå kun spørsmål for alle: skritflige, spørretime & interpellasjon)
+        cursor.execute(""" insert IGNORE into sporsmal (id, sesjonid, versjon, besvart_av, besvart_av_minister_id, besvart_av_minister_tittel, besvart_dato, pa_vegne_av, besvart_pa_vegne_av_minister_id, besvart_pa_vegne_av_minister_tittel, datert_dato, flyttet_til, fremsatt_av_annen, rette_vedkommende, rette_vedkommende_minister_id, rette_vedkommende_minister_tittel, sendt_dato, sporsmal_fra, sporsmal_nummer, sporsmal_til, sporsmal_til_minister_id, sporsmal_til_minister_tittel, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s)""", et_sporsmaal)
+        print "%s row(s) inserted (sporretimesporsmal) for sesjonen %s, id %s - antall relasjoner %s" % (cursor.rowcount, sesjonid.encode('utf8'), spor.find("id", recursive=False).text.encode('utf8'), len(sporsmal_emne))
+        conn.commit()
+        
+        for relasjon in sporsmal_emne:            
+            cursor.execute(""" insert IGNORE into sporsmal_emne (sporsmalid, emneid) values (%s, %s)""", (spor.find("id", recursive=False).text, relasjon))
+            print "\t %s row(s) inserted (relasjon: sporsmal_emne) sporsmal_emne %s-%s " % (cursor.rowcount, spor.find("id", recursive=False).text.encode('utf8'),relasjon.encode('utf8'))
+            conn.commit()
+
+    
+    #sys.exit("en holder..")
+    
+    
+def batch_fetch_alle_sporretimesporsmal():
+    """ auxiliary funksjon for å kjøre get_sporretimesporsmal for alle sesjoner """
+    cursor = conn.cursor() 
+    cursor.execute("""SELECT id FROM sesjoner""")
+    results = cursor.fetchall()
+    for result in results:
+        get_sporretimesporsmal(result[0])
+
+
+
 
 def get_interpellasjoner(sesjonid):
     url = "http://data.stortinget.no/eksport/interpellasjoner?sesjonid=%s" % (sesjonid)
-    # ===========================
-    # = her gjenstår det arbeid =
-    # ===========================
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content, "xml")
+    for spor in soup.find_all('sporsmal'):
+        try:
+            pa_vegne_av = spor.besvart_pa_vegne_av.id.text
+        except:
+            pa_vegne_av = ''
+        try:
+            besvart_pa_vegne_av_minister_id = spor.besvart_pa_vegne_av_minister_id.text
+        except:
+            besvart_pa_vegne_av_minister_id = ''
+        try: 
+            besvart_pa_vegne_av_minister_tittel = spor.besvart_pa_vegne_av_minister_tittel.text
+        except:
+            besvart_pa_vegne_av_minister_tittel = ''
+        try:
+            rette_vedkommende = spor.rette_vedkommende.id.text
+        except:
+            rette_vedkommende = '' #False
+        try:
+            rette_vedkommende_minister_id = spor.rette_vedkommende_minister_id.text
+        except:
+            rette_vedkommende_minister_id = ''#False
+        try:
+            rette_vedkommende_minister_tittel = spor.rette_vedkommende_minister_tittel.text
+        except:
+            rette_vedkommende_minister_tittel = ''#False
+        try:
+            fremsatt_av_annen = spor.fremsatt_av_annen.id.text
+            # her er også andre variabler relavant:
+            # versjon, doedsdato, etternavn, foedselsdato, fornavn, id, kjoenn, (+ fylke & parti, som kan være 'nil' her...)
+        except:
+            fremsatt_av_annen = ''#False
+        
+        sporsmal_emne = []
+        if(len(spor.find_all('emne'))>0):
+            for ref in spor.find_all('emne'):
+                sporsmal_emne.append(ref.id.text)
+        
+        et_sporsmaal = (
+                    spor.find("id", recursive=False).text,  #alt ok se http://stackoverflow.com/questions/10592462/parsing-xml-with-beautifulsoup-multiple-tags-with-same-name-how-to-find-the-r
+                    #spor.sesjon_id.text,                   #alt ok - nøkkel mot sesjoner - diplikat av input. jeg bruker innput
+                    sesjonid,                              #alt ok
+                    spor.versjon.text,                     #alt ok
+                    spor.besvart_av.id.text,               #alt ok
+                    spor.besvart_av_minister_id.text,      #alt ok
+                    spor.besvart_av_minister_tittel.text,  #alt ok
+                    spor.besvart_dato.text,                #alt ok
+                    pa_vegne_av,                           #alt ok
+                    besvart_pa_vegne_av_minister_id,       #alt ok
+                    besvart_pa_vegne_av_minister_tittel,   #alt ok
+                    spor.datert_dato.text,                 #alt ok
+                    #spor.emne_liste,           # liste
+                    spor.flyttet_til.text,                 #alt ok # "ikke spesifisert" er default.. "rette_vedkommende" brukes når ting er flyttet
+                    fremsatt_av_annen,                    
+                    # dette er en ref til representanter igjen?
+                    # nei - dette er folk som IKKE er representanter (aka finnes i representanter-tabellen)
+                    # skal jeg lagre dette??
+                    rette_vedkommende,                     #alt ok
+                    rette_vedkommende_minister_id,         #alt ok
+                    rette_vedkommende_minister_tittel,     #alt ok
+                    spor.sendt_dato.text,                  #alt ok
+                    spor.sporsmal_fra.id.text,             #alt ok - så lenge det er 1:1, nøkkel mot representanter     # kan skriftlige spørsmål bare stilles av folkevalgte??
+                    spor.sporsmal_nummer.text,              #alt ok (her er det kompositte nøkler igjen. spørsmålsnummer må være pr år (sesjon, antageligvis))
+                    spor.sporsmal_til.id.text,             #alt ok - så lenge det er 1:1, nøkkel mot representanter     # kan skriftlige spørsmål bare stilles til folkevalgte?
+                    spor.sporsmal_til_minister_id.text,    #alt ok - nøkkel mot noe?
+                    spor.sporsmal_til_minister_tittel.text,#alt ok -fulltekst ministertittel
+                    spor.status.text,                       #alt ok
+                    spor.tittel.text,                       #alt ok
+                    spor.type.text                          #alt ok
+                    )
+        #print et_sporsmaal
+        #print sporsmal_emne
+        cursor = conn.cursor()
+        #insert into skriftligesporsmal (nå kun spørsmål for alle: skritflige, spørretime & interpellasjon)
+        cursor.execute(""" insert IGNORE into sporsmal (id, sesjonid, versjon, besvart_av, besvart_av_minister_id, besvart_av_minister_tittel, besvart_dato, pa_vegne_av, besvart_pa_vegne_av_minister_id, besvart_pa_vegne_av_minister_tittel, datert_dato, flyttet_til, fremsatt_av_annen, rette_vedkommende, rette_vedkommende_minister_id, rette_vedkommende_minister_tittel, sendt_dato, sporsmal_fra, sporsmal_nummer, sporsmal_til, sporsmal_til_minister_id, sporsmal_til_minister_tittel, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s)""", et_sporsmaal)
+        print "%s row(s) inserted (interpellasjoner) for sesjonen %s, id %s - antall relasjoner %s" % (cursor.rowcount, sesjonid.encode('utf8'), spor.find("id", recursive=False).text.encode('utf8'), len(sporsmal_emne))
+        conn.commit()
+        
+        for relasjon in sporsmal_emne:            
+            cursor.execute(""" insert IGNORE into sporsmal_emne (sporsmalid, emneid) values (%s, %s)""", (spor.find("id", recursive=False).text, relasjon))
+            print "\t %s row(s) inserted (relasjon: sporsmal_emne) sporsmal_emne %s-%s " % (cursor.rowcount, spor.find("id", recursive=False).text.encode('utf8'),relasjon.encode('utf8'))
+            conn.commit()
+        
+        
+        #sys.exit("slutt")
+
+
+def batch_fetch_alle_interpellasjoner():
+    """ auxiliary funksjon for å kjøre get_interpellasjoner for alle sesjoner """
+    cursor = conn.cursor() #    1.0 1986-10-01T00:00:00 1986-87 1987-09-30T23:59:59
+    cursor.execute("""SELECT id FROM sesjoner""")
+    results = cursor.fetchall()
+    for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
+        #print result[0]
+        get_interpellasjoner(result[0])
+        #sys.exit("en holder..")
 
 
 def get_skriftligesporsmal(sesjonid):
@@ -319,6 +508,16 @@ def get_skriftligesporsmal(sesjonid):
             # versjon, doedsdato, etternavn, foedselsdato, fornavn, id, kjoenn, (+ fylke & parti, som kan være 'nil' her...)
         except:
             fremsatt_av_annen = ''#False
+        
+        sporsmal_emne = []
+        if(len(spor.find_all('emne'))>0):
+            for ref in spor.find_all('emne'):
+                sporsmal_emne.append(ref.id.text)
+        
+        for relasjon in sporsmal_emne:            
+            cursor.execute(""" insert IGNORE into sporsmal_emne (sporsmalid, emneid) values (%s, %s)""", (spor.find("id", recursive=False).text, relasjon))
+            print "%s row(s) inserted (relasjon: sporsmal_emne) sporsmal_emne %s-%s " % (cursor.rowcount, spor.find("id", recursive=False).text.encode('utf8'),relasjon.encode('utf8'))
+            conn.commit()
         
         et_sporsmaal = (
                     ##    spor.id.text,                                    #dette er feil se http://stackoverflow.com/questions/10592462/parsing-xml-with-beautifulsoup-multiple-tags-with-same-name-how-to-find-the-r
@@ -359,14 +558,16 @@ def get_skriftligesporsmal(sesjonid):
         # reconnect?? fikk stadige "_mysql_exceptions.OperationalError: (2006, 'MySQL server has gone away')"-feil, reconnect ser ut til å funke..
         # når det er veldig mange får jeg en time-out feil. prøver derfor en insert for hvert eneste spørsmål. (størrelsen på den akkumelerte listen blir større en max-verdien min..)
         cursor = conn.cursor()
-        cursor.execute(""" insert IGNORE into skriftligesporsmal (id, sesjonid, versjon, besvart_av, besvart_av_minister_id, besvart_av_minister_tittel, besvart_dato, pa_vegne_av, besvart_pa_vegne_av_minister_id, besvart_pa_vegne_av_minister_tittel, datert_dato, flyttet_til, fremsatt_av_annen, rette_vedkommende, rette_vedkommende_minister_id, rette_vedkommende_minister_tittel, sendt_dato, sporsmal_fra, sporsmal_nummer, sporsmal_til, sporsmal_til_minister_id, sporsmal_til_minister_tittel, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s)""", et_sporsmaal)
-        print "%s row(s) inserted (skriftlige spørsmål) for sesjonen %s, id %s " % (cursor.rowcount, sesjonid.encode('utf8'), spor.find("id", recursive=False).text.encode('utf8'))
+        #insert into skriftligesporsmal (nå kun spørsmål for alle: skritflige, spørretime & interpellasjon)
+        cursor.execute(""" insert IGNORE into sporsmal (id, sesjonid, versjon, besvart_av, besvart_av_minister_id, besvart_av_minister_tittel, besvart_dato, pa_vegne_av, besvart_pa_vegne_av_minister_id, besvart_pa_vegne_av_minister_tittel, datert_dato, flyttet_til, fremsatt_av_annen, rette_vedkommende, rette_vedkommende_minister_id, rette_vedkommende_minister_tittel, sendt_dato, sporsmal_fra, sporsmal_nummer, sporsmal_til, sporsmal_til_minister_id, sporsmal_til_minister_tittel, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s)""", et_sporsmaal)
+        print "%s row(s) inserted ( spørsmål) for sesjonen %s, id %s " % (cursor.rowcount, sesjonid.encode('utf8'), spor.find("id", recursive=False).text.encode('utf8'))
         conn.commit()
+        #sys.exit("slutt")
     # cursor = conn.cursor()
     # cursor.executemany(""" insert IGNORE into skriftligesporsmal (id, sesjonid, versjon, besvart_av, besvart_av_minister_id, besvart_av_minister_tittel, besvart_dato, pa_vegne_av, besvart_pa_vegne_av_minister_id, besvart_pa_vegne_av_minister_tittel, datert_dato, flyttet_til, fremsatt_av_annen, rette_vedkommende, rette_vedkommende_minister_id, rette_vedkommende_minister_tittel, sendt_dato, sporsmal_fra, sporsmal_nummer, sporsmal_til, sporsmal_til_minister_id, sporsmal_til_minister_tittel, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s)""", alle_sporsmaal)
     # print "%s row(s) inserted (skriftlige spørsmål) for sesjonen %s " % (cursor.rowcount, sesjonid.encode('utf8'))
     # conn.commit()
-    print "Ferdig med sesjon %s" % (sesjonid)
+    print "Ferdig med sriftlige sporsmal for sesjon %s" % (sesjonid)
 
 def batch_fetch_alle_skriftligesporsmal():
     """ auxiliary funksjon for å kjøre get_skriftligesporsmal for alle sesjoner """
@@ -443,9 +644,6 @@ def get_saker(sesjonid):
         #først relasjonene:
         cursor = conn.cursor()
         for relasjon in sak_emne:
-            # ===============================================================
-            # = her tor jeg det er noe feil, det er kun 7 rader i databasen =
-            # ===============================================================
             cursor.execute(""" insert IGNORE into sak_emne (saksid, emneid) values (%s, %s)""", (sak.find("id", recursive=False).text, relasjon))
             print "%s row(s) inserted (relasjon: sak-emne) saksid-emneid %s-%s " % (cursor.rowcount, sak.find("id", recursive=False).text.encode('utf8'), relasjon.encode('utf8'))
             conn.commit()
@@ -469,7 +667,6 @@ def batch_fetch_alle_saker():
     for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
         #print result[0]
         get_saker(result[0])
-
 
 def get_voteringer(sakid):
     # antar saker har voteringsid, som er det jeg trenger til de siste funksjonene (som virker rimelig)
@@ -585,12 +782,14 @@ def get_voteringsresultat(voteringid):
 def main():
     # get_voteringsresultat('1499')
     # get_voteringsvedtak('1499')
-    batch_fetch_alle_voteringsforslag() # get_voteringsforslag('1499')
+#    batch_fetch_alle_voteringsforslag() # get_voteringsforslag('1499')
     ##batch_fetch_alle_voteringer() # get_voteringer('50135')
     ##batch_fetch_alle_saker() # get_saker('2011-2012')    
-    ## batch_fetch_alle_skriftligesporsmal() # get_skriftligesporsmal('2011-2012')
-    # get_interpellasjoner('2011-2012')
-    # get_sporretimesporsmal('2011-2012')
+    ##batch_fetch_alle_skriftligesporsmal() # get_skriftligesporsmal('2011-2012')
+    
+    ##batch_fetch_alle_interpellasjoner()     # get_interpellasjoner('2011-2012')
+    
+    batch_fetch_alle_sporretimesporsmal() # get_sporretimesporsmal('2011-2012')
     # get_dagensrepresentanter()
     ## batch_fetch_alle_representanter() # kjører denne i batch (for each stortingsperiode):     ## get_representanter('2009-2013')
     ##get_alle_komiteer()
