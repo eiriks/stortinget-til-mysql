@@ -342,7 +342,7 @@ def get_sporretimesporsmal(sesjonid):
                     spor.tittel.text,                       #alt ok
                     spor.type.text                          #alt ok
                     )
-        print "\t\t\t\t\t\t\t\t\t\t\t\t\t\t", spor.type.text
+        #print "\t\t\t\t\t\t\t\t\t\t\t\t\t\t", spor.type.text
         #print et_sporsmaal
         #print sporsmal_emne
         cursor = conn.cursor()
@@ -355,9 +355,6 @@ def get_sporretimesporsmal(sesjonid):
             cursor.execute(""" insert IGNORE into sporsmal_emne (sporsmalid, emneid) values (%s, %s)""", (spor.find("id", recursive=False).text, relasjon))
             print "\t %s row(s) inserted (relasjon: sporsmal_emne) sporsmal_emne %s-%s " % (cursor.rowcount, spor.find("id", recursive=False).text.encode('utf8'),relasjon.encode('utf8'))
             conn.commit()
-
-    
-    #sys.exit("en holder..")
     
     
 def batch_fetch_alle_sporretimesporsmal():
