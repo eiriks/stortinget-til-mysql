@@ -769,15 +769,6 @@ def get_voteringsvedtak(voteringid):
     voteringid_fra_xml = soup.votering_id.text
     voteringsvedtak_liste = []
     for votv in soup.find_all('voteringsvedtak'):
-        
-        # ========================================
-        # = hvorfor får jeg ikke teksten med???? =
-        # ========================================
-        try:
-            vedtak_text = votv.vedtak_text
-        except:
-            vedtak_text = ''
-        
         en_voteringsvedtak = (
         voteringid_fra_xml,
         votv.versjon.text,
@@ -785,10 +776,14 @@ def get_voteringsvedtak(voteringid):
         votv.vedtak_kommentar.text,
         votv.vedtak_nummer.text,
         votv.vedtak_referanse.text,
-        vedtak_text
+        votv.vedtak_tekst.text
         )
-        print en_voteringsvedtak
-    print voteringid, len(soup.find_all('voteringsvedtak'))
+        voteringsvedtak_liste.append(en_voteringsvedtak)
+    #print voteringid, len(soup.find_all('voteringsvedtak')), len(voteringsvedtak_liste)
+    cursor = conn.cursor()
+    cursor.executemany(""" insert IGNORE into voteringsvedtak (voteringid, versjon, vedtak_kode, vedtak_kommentar, vedtak_nummer, vedtak_referanse, vedtak_tekst) values (%s, %s, %s, %s, %s, %s, %s)""", voteringsvedtak_liste)
+    print "%s row(s) inserted - voteringsvedtak for votering %s " % (cursor.rowcount, voteringid)
+    conn.commit()
     
 def batch_fetch_alle_voteringsvedtak():
     """ auxiliary funksjon for å kjøre get_saker for alle sesjoner """
