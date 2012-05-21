@@ -821,7 +821,7 @@ def main():
     ##get_emner()
     ##get_sesjoner()
     ##get_stortingsperioder()
-    pass
+    os.system('exit')           # denne killer prosessen etter at alt har kjøpt (sies det)
 
 
 
