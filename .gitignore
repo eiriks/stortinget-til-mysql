@@ -1,3 +1,7 @@
 utdatert.py
 .DS_Store
 toolbar.py
+*.log
+*.csv
+*.sql
+*.xml

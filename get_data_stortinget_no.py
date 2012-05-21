@@ -349,12 +349,14 @@ def get_sporretimesporsmal(sesjonid):
         cursor = conn.cursor()
         #insert into skriftligesporsmal (nå kun spørsmål for alle: skritflige, spørretime & interpellasjon)
         cursor.execute(""" insert IGNORE into sporsmal (id, sesjonid, versjon, besvart_av, besvart_av_minister_id, besvart_av_minister_tittel, besvart_dato, pa_vegne_av, besvart_pa_vegne_av_minister_id, besvart_pa_vegne_av_minister_tittel, datert_dato, flyttet_til, fremsatt_av_annen, rette_vedkommende, rette_vedkommende_minister_id, rette_vedkommende_minister_tittel, sendt_dato, sporsmal_fra, sporsmal_nummer, sporsmal_til, sporsmal_til_minister_id, sporsmal_til_minister_tittel, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s)""", et_sporsmaal)
-        print "%s row(s) inserted (sporretimesporsmal) for sesjonen %s, id %s - antall relasjoner %s" % (cursor.rowcount, sesjonid.encode('utf8'), spor.find("id", recursive=False).text.encode('utf8'), len(sporsmal_emne))
+        if cursor.rowcount > 0:
+            print "%s row(s) inserted (sporretimesporsmal) for sesjonen %s, id %s - antall relasjoner %s" % (cursor.rowcount, sesjonid.encode('utf8'), spor.find("id", recursive=False).text.encode('utf8'), len(sporsmal_emne))
         conn.commit()
         
         for relasjon in sporsmal_emne:            
             cursor.execute(""" insert IGNORE into sporsmal_emne (sporsmalid, emneid) values (%s, %s)""", (spor.find("id", recursive=False).text, relasjon))
-            print "\t %s row(s) inserted (relasjon: sporsmal_emne) sporsmal_emne %s-%s " % (cursor.rowcount, spor.find("id", recursive=False).text.encode('utf8'),relasjon.encode('utf8'))
+            if cursor.rowcount > 0:
+                print "\t %s row(s) inserted (relasjon: sporsmal_emne) sporsmal_emne %s-%s " % (cursor.rowcount, spor.find("id", recursive=False).text.encode('utf8'),relasjon.encode('utf8'))
             conn.commit()
     
     
@@ -366,8 +368,6 @@ def batch_fetch_alle_sporretimesporsmal():
     for result in results:
         time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_sporretimesporsmal(result[0])
-
-
 
 
 def get_interpellasjoner(sesjonid):
@@ -448,16 +448,15 @@ def get_interpellasjoner(sesjonid):
         cursor = conn.cursor()
         #insert into skriftligesporsmal (nå kun spørsmål for alle: skritflige, spørretime & interpellasjon)
         cursor.execute(""" insert IGNORE into sporsmal (id, sesjonid, versjon, besvart_av, besvart_av_minister_id, besvart_av_minister_tittel, besvart_dato, pa_vegne_av, besvart_pa_vegne_av_minister_id, besvart_pa_vegne_av_minister_tittel, datert_dato, flyttet_til, fremsatt_av_annen, rette_vedkommende, rette_vedkommende_minister_id, rette_vedkommende_minister_tittel, sendt_dato, sporsmal_fra, sporsmal_nummer, sporsmal_til, sporsmal_til_minister_id, sporsmal_til_minister_tittel, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s)""", et_sporsmaal)
-        print "%s row(s) inserted (interpellasjoner) for sesjonen %s, id %s - antall relasjoner %s" % (cursor.rowcount, sesjonid.encode('utf8'), spor.find("id", recursive=False).text.encode('utf8'), len(sporsmal_emne))
+        if cursor.rowcount > 0:
+            print "%s row(s) inserted (interpellasjoner) for sesjonen %s, id %s - antall relasjoner %s" % (cursor.rowcount, sesjonid.encode('utf8'), spor.find("id", recursive=False).text.encode('utf8'), len(sporsmal_emne))
         conn.commit()
         
         for relasjon in sporsmal_emne:            
             cursor.execute(""" insert IGNORE into sporsmal_emne (sporsmalid, emneid) values (%s, %s)""", (spor.find("id", recursive=False).text, relasjon))
-            print "\t %s row(s) inserted (relasjon: sporsmal_emne) sporsmal_emne %s-%s " % (cursor.rowcount, spor.find("id", recursive=False).text.encode('utf8'),relasjon.encode('utf8'))
+            if cursor.rowcount > 0:
+                print "\t %s row(s) inserted (relasjon: sporsmal_emne) sporsmal_emne %s-%s " % (cursor.rowcount, spor.find("id", recursive=False).text.encode('utf8'),relasjon.encode('utf8'))
             conn.commit()
-        
-        
-        #sys.exit("slutt")
 
 
 def batch_fetch_alle_interpellasjoner():
@@ -555,7 +554,7 @@ def get_skriftligesporsmal(sesjonid):
                     )
         #print et_sporsmaal
         #alle_sporsmaal.append(et_sporsmaal)
-        # reconnect?? fikk stadige "_mysql_exceptions.OperationalError: (2006, 'MySQL server has gone away')"-feil, reconnect ser ut til å funke..
+        # reconnect?? fikk stadige "_mysql_exceptions.OperationalError: (2006, 'MySQL server has gone away')"-feil, reconnect ser ut til å funke.. 
         # når det er veldig mange får jeg en time-out feil. prøver derfor en insert for hvert eneste spørsmål. (størrelsen på den akkumelerte listen blir større en max-verdien min..)
         cursor = conn.cursor()
         #insert into skriftligesporsmal (nå kun spørsmål for alle: skritflige, spørretime & interpellasjon)
@@ -563,12 +562,7 @@ def get_skriftligesporsmal(sesjonid):
         if cursor.rowcount > 0:
             print "%s row(s) inserted ( spørsmål) for sesjonen %s, id %s " % (cursor.rowcount, sesjonid.encode('utf8'), spor.find("id", recursive=False).text.encode('utf8'))
         conn.commit()
-        #sys.exit("slutt")
-    # cursor = conn.cursor()
-    # cursor.executemany(""" insert IGNORE into skriftligesporsmal (id, sesjonid, versjon, besvart_av, besvart_av_minister_id, besvart_av_minister_tittel, besvart_dato, pa_vegne_av, besvart_pa_vegne_av_minister_id, besvart_pa_vegne_av_minister_tittel, datert_dato, flyttet_til, fremsatt_av_annen, rette_vedkommende, rette_vedkommende_minister_id, rette_vedkommende_minister_tittel, sendt_dato, sporsmal_fra, sporsmal_nummer, sporsmal_til, sporsmal_til_minister_id, sporsmal_til_minister_tittel, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s)""", alle_sporsmaal)
-    # print "%s row(s) inserted (skriftlige spørsmål) for sesjonen %s " % (cursor.rowcount, sesjonid.encode('utf8'))
-    # conn.commit()
-    print "Ferdig med sriftlige sporsmal for sesjon %s" % (sesjonid)
+    print "Ferdig med skriftlige sporsmal for sesjon %s" % (sesjonid)
 
 def batch_fetch_alle_skriftligesporsmal():
     """ auxiliary funksjon for å kjøre get_skriftligesporsmal for alle sesjoner """
@@ -578,7 +572,7 @@ def batch_fetch_alle_skriftligesporsmal():
     for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
         time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_skriftligesporsmal(result[0])
-    
+
 
 def get_saker(sesjonid):
     """ trenger relasjoner til tre (3) tabeller: 
@@ -656,7 +650,6 @@ def get_saker(sesjonid):
             print "%s row(s) inserted (saker) for sesjonen %s, id %s " % (cursor.rowcount, sesjonid.encode('utf8'), sak.find("id", recursive=False).text.encode('utf8'))
         conn.commit()
         #print en_sak
-        #sys.exit("dø")
     print "ferdig med å sette inn saker for sesjonen %s" % (sesjonid.encode('utf8'))
                 
 def batch_fetch_alle_saker():
@@ -664,7 +657,7 @@ def batch_fetch_alle_saker():
     cursor = conn.cursor()
     cursor.execute("""SELECT id FROM sesjoner""")
     results = cursor.fetchall()
-    for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
+    for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:]
         time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_saker(result[0])
 
@@ -890,7 +883,7 @@ def main():
     # ==========================
     batch_fetch_alle_voteringer() # get_voteringer('50135')
     time.sleep(100)
-
+    
     # ==============================
     # = data som krever voteringid =
     # ==============================
@@ -900,7 +893,7 @@ def main():
     time.sleep(100)
     batch_fetch_alle_voteringsforslag() # get_voteringsforslag('1499')
     time.sleep(100)
-
+    
     os.system('exit')           # denne killer prosessen etter at alt har kjøpt (sies det)
 
 
