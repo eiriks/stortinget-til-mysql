@@ -797,14 +797,47 @@ def batch_fetch_alle_voteringsvedtak():
 
 def get_voteringsresultat(voteringid):
     url = "http://data.stortinget.no/eksport/voteringsresultat?VoteringId=%s" % (voteringid)
-    # ===========================
-    # = her gjenstår det arbeid =
-    # ===========================
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content, "xml")
+    voteringid_fra_xml = soup.votering_id.text
+    voteringsresultat_liste = []
+    for votr in soup.find_all("representant_voteringsresultat"):
+        try:
+            fast_vara_for = votr.fast_vara_for.id.text
+        except:
+            fast_vara_for = ''
+        try:
+            vara_for = votr.vara_for.id.text
+        except:
+            vara_for = ''
+        rep_votr = (
+        voteringid_fra_xml,
+        votr.representant.id.text,
+        votr.versjon.text,
+        fast_vara_for,
+        vara_for,
+        votr.votering.text
+        )
+        voteringsresultat_liste.append(rep_votr)
+    cursor = conn.cursor()
+    #cursor.executemany(""" insert IGNORE into voteringsvedtak (voteringid, versjon, vedtak_kode, vedtak_kommentar, vedtak_nummer, vedtak_referanse, vedtak_tekst) values (%s, %s, %s, %s, %s, %s, %s)""", voteringsvedtak_liste)
+    #print "%s row(s) inserted - voteringsvedtak for votering %s " % (cursor.rowcount, voteringid)
+    conn.commit()
     
 
+def batch_fetch_alle_voteringsresultat():
+    """ auxiliary funksjon for å kjøre get_saker for alle sesjoner """
+    cursor = conn.cursor()
+    cursor.execute("""SELECT DISTINCT votering_id FROM sak_votering""")     #hvorfor må denne være distinkt? kan flere saker ha samme votering_id? eller er det redundans i sak_votering-tabellen?
+    results = cursor.fetchall()
+    for result in results:
+        time.sleep(1.5)     #ikke stresse it@stortinget ?
+        get_voteringsresultat(result[0])
+
+
 def main():
-    # get_voteringsresultat('1499')
-    batch_fetch_alle_voteringsvedtak() # get_voteringsvedtak('1499')
+    batch_fetch_alle_voteringsresultat() # get_voteringsresultat('1499')
+    ##batch_fetch_alle_voteringsvedtak() # get_voteringsvedtak('1499')
 #    batch_fetch_alle_voteringsforslag() # get_voteringsforslag('1499')
     ##batch_fetch_alle_voteringer() # get_voteringer('50135')
     ##batch_fetch_alle_saker() # get_saker('2011-2012')    
