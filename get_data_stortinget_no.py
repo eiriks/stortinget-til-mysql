@@ -822,6 +822,7 @@ def main():
     ##get_sesjoner()
     ##get_stortingsperioder()
     os.system('exit')           # denne killer prosessen etter at alt har kjøpt (sies det)
+    #os.system("kill -9 %d" % (os.getppid()))
 
 
 
