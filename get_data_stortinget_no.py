@@ -44,7 +44,7 @@ def get_stortingsperioder():
     
     for result in results:
         if result[0] != current_id:
-            print result
+            #print result
             cursor.execute("""UPDATE stortingsperioder SET er_innevaerende = 0 WHERE id = '%s'""" % (result[0]))
             print "%s row updated (gammel stortingsperiode satt til ikke-aktiv)" % cursor.rowcount
             conn.commit()
@@ -175,7 +175,7 @@ def batch_fetch_alle_partier_pr_sessjon():
     results = cursor.fetchall()
     for result in results:
         get_partier(result[0])
-        #sys.exit("det holder med en runde")
+        time.sleep(1.5)     #ikke stresse it@stortinget ?
 
 def get_alle_partier():
     url = "http://data.stortinget.no/eksport/allepartier"
@@ -211,7 +211,7 @@ def batch_fetch_alle_kommiteer_pr_sessjon():
     results = cursor.fetchall()
     for result in results:
         get_kommiteer(result[0])
-        #sys.exit("det holder med en runde")
+        time.sleep(1.5)     #ikke stresse it@stortinget ?
 
 
 def get_alle_komiteer():
@@ -251,6 +251,7 @@ def batch_fetch_alle_representanter():
     cursor.execute("""SELECT id FROM stortingsperioder""")
     results = cursor.fetchall()
     for result in results:
+        time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_representanter(result[0])
     
 
@@ -363,6 +364,7 @@ def batch_fetch_alle_sporretimesporsmal():
     cursor.execute("""SELECT id FROM sesjoner""")
     results = cursor.fetchall()
     for result in results:
+        time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_sporretimesporsmal(result[0])
 
 
@@ -464,7 +466,7 @@ def batch_fetch_alle_interpellasjoner():
     cursor.execute("""SELECT id FROM sesjoner""")
     results = cursor.fetchall()
     for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
-        #print result[0]
+        time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_interpellasjoner(result[0])
         #sys.exit("en holder..")
 
@@ -574,9 +576,8 @@ def batch_fetch_alle_skriftligesporsmal():
     cursor.execute("""SELECT id FROM sesjoner""")
     results = cursor.fetchall()
     for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
-        #print result[0]
+        time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_skriftligesporsmal(result[0])
-        #sys.exit("en holder..")
     
 
 def get_saker(sesjonid):
@@ -586,9 +587,6 @@ def get_saker(sesjonid):
     - representanter (1:n) (alle, eller kun denne sesjonens?)                               # har tbl : representanter
     """
     url = "http://data.stortinget.no/eksport/saker?sesjonid=%s" % (sesjonid)
-    #print url
-    # http://data.stortinget.no/eksport/saker?sesjonid=2009-2010
-    # http://data.stortinget.no/eksport/saker?sesjonid=2009-2010
     r = requests.get(url)
     soup = BeautifulSoup(r.content, "xml")
     #alle_sporsmaal = []
@@ -667,7 +665,7 @@ def batch_fetch_alle_saker():
     cursor.execute("""SELECT id FROM sesjoner""")
     results = cursor.fetchall()
     for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
-        #print result[0]
+        time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_saker(result[0])
 
 def get_voteringer(sakid):
@@ -721,7 +719,6 @@ def batch_fetch_alle_voteringer():
     cursor.execute("""SELECT id FROM saker WHERE status = 'behandlet' ORDER BY id DESC""")
     results = cursor.fetchall()
     for result in results: #[-4:]   [23:]  # finner ikke noe fra før 1996-97 aka results[10:] (finner ikke noe på 11)
-        #print result[0]
         time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_voteringer(result[0])
 
@@ -799,7 +796,7 @@ def batch_fetch_alle_voteringsvedtak():
     cursor.execute("""SELECT DISTINCT votering_id FROM sak_votering""")     #hvorfor må denne være distinkt? kan flere saker ha samme votering_id? eller er det redundans i sak_votering-tabellen?
     results = cursor.fetchall()
     for result in results:
-        #time.sleep(1.5)     #ikke stresse it@stortinget ?
+        time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_voteringsvedtak(result[0])
 
 
@@ -842,7 +839,7 @@ def batch_fetch_alle_voteringsresultat():
     cursor.execute("""SELECT DISTINCT votering_id FROM sak_votering""")     #hvorfor må denne være distinkt? kan flere saker ha samme votering_id? eller er det redundans i sak_votering-tabellen?
     results = cursor.fetchall()
     for result in results:
-        #time.sleep(1.5)     #ikke stresse it@stortinget ?
+        time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_voteringsresultat(result[0])
 
 def get_current_session_nr():
@@ -867,6 +864,8 @@ def main():
     get_alle_komiteer()
     #   # get_dagensrepresentanter()        # denne har jeg ikke, og er usikker på om jeg trenger til noe.
     get_sesjoner()
+    
+    time.sleep(10)
     
     # =============================
     # = data som krever sesjon_id =
