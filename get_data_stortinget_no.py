@@ -513,7 +513,8 @@ def get_skriftligesporsmal(sesjonid):
         
         for relasjon in sporsmal_emne:            
             cursor.execute(""" insert IGNORE into sporsmal_emne (sporsmalid, emneid) values (%s, %s)""", (spor.find("id", recursive=False).text, relasjon))
-            print "%s row(s) inserted (relasjon: sporsmal_emne) sporsmal_emne %s-%s " % (cursor.rowcount, spor.find("id", recursive=False).text.encode('utf8'),relasjon.encode('utf8'))
+            if cursor.rowcount > 0:
+                print "%s row(s) inserted (relasjon: sporsmal_emne) sporsmal_emne %s-%s " % (cursor.rowcount, spor.find("id", recursive=False).text.encode('utf8'),relasjon.encode('utf8'))
             conn.commit()
         
         et_sporsmaal = (
@@ -557,7 +558,8 @@ def get_skriftligesporsmal(sesjonid):
         cursor = conn.cursor()
         #insert into skriftligesporsmal (nå kun spørsmål for alle: skritflige, spørretime & interpellasjon)
         cursor.execute(""" insert IGNORE into sporsmal (id, sesjonid, versjon, besvart_av, besvart_av_minister_id, besvart_av_minister_tittel, besvart_dato, pa_vegne_av, besvart_pa_vegne_av_minister_id, besvart_pa_vegne_av_minister_tittel, datert_dato, flyttet_til, fremsatt_av_annen, rette_vedkommende, rette_vedkommende_minister_id, rette_vedkommende_minister_tittel, sendt_dato, sporsmal_fra, sporsmal_nummer, sporsmal_til, sporsmal_til_minister_id, sporsmal_til_minister_tittel, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s)""", et_sporsmaal)
-        print "%s row(s) inserted ( spørsmål) for sesjonen %s, id %s " % (cursor.rowcount, sesjonid.encode('utf8'), spor.find("id", recursive=False).text.encode('utf8'))
+        if cursor.rowcount > 0:
+            print "%s row(s) inserted ( spørsmål) for sesjonen %s, id %s " % (cursor.rowcount, sesjonid.encode('utf8'), spor.find("id", recursive=False).text.encode('utf8'))
         conn.commit()
         #sys.exit("slutt")
     # cursor = conn.cursor()
@@ -642,15 +644,18 @@ def get_saker(sesjonid):
         cursor = conn.cursor()
         for relasjon in sak_emne:
             cursor.execute(""" insert IGNORE into sak_emne (saksid, emneid) values (%s, %s)""", (sak.find("id", recursive=False).text, relasjon))
-            print "%s row(s) inserted (relasjon: sak-emne) saksid-emneid %s-%s " % (cursor.rowcount, sak.find("id", recursive=False).text.encode('utf8'), relasjon.encode('utf8'))
+            if cursor.rowcount > 0:
+                print "%s row(s) inserted (relasjon: sak-emne) saksid-emneid %s-%s " % (cursor.rowcount, sak.find("id", recursive=False).text.encode('utf8'), relasjon.encode('utf8'))
             conn.commit()
         for relasjon in sak_saksordfoerer:            
             cursor.execute(""" insert IGNORE into sak_saksordfoerer (saksid, saksordfoerer) values (%s, %s)""", (sak.find("id", recursive=False).text, relasjon))
-            print "%s row(s) inserted (relasjon: sak_saksordfoerer) saksid-representantid %s-%s " % (cursor.rowcount, sak.find("id", recursive=False).text.encode('utf8'),relasjon.encode('utf8'))
+            if cursor.rowcount > 0:
+                print "%s row(s) inserted (relasjon: sak_saksordfoerer) saksid-representantid %s-%s " % (cursor.rowcount, sak.find("id", recursive=False).text.encode('utf8'),relasjon.encode('utf8'))
             conn.commit()
         # så selve saken:
         cursor.execute(""" insert IGNORE into saker (id, versjon, behandlet_sesjon_id, dokumentgruppe, henvisning, innstilling_id, komiteid, komitenavn, korttittel, sak_fremmet_id, sist_oppdatert_dato, status, tittel, type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", en_sak)
-        print "%s row(s) inserted (saker) for sesjonen %s, id %s " % (cursor.rowcount, sesjonid.encode('utf8'), sak.find("id", recursive=False).text.encode('utf8'))
+        if cursor.rowcount > 0:
+            print "%s row(s) inserted (saker) for sesjonen %s, id %s " % (cursor.rowcount, sesjonid.encode('utf8'), sak.find("id", recursive=False).text.encode('utf8'))
         conn.commit()
         #print en_sak
         #sys.exit("dø")
@@ -688,7 +693,7 @@ def get_voteringer(sakid):
         vot.personlig_votering.text,
         vot.president.id.text,
         vot.vedtatt.text,
-        vot.votering_id.text,
+        vot.votering_id.text,       # kan en sak ha flere voteringer? (hvorfor skulle den ikke kunne ha det?)
         vot.votering_metode.text,
         vot.votering_resultat_type.text,
         vot.votering_resultat_type_tekst.text,
@@ -705,7 +710,8 @@ def get_voteringer(sakid):
             voteringer.append(votering)
     cursor = conn.cursor()
     cursor.executemany(""" insert IGNORE into sak_votering (sak_id, versjon, alternativ_votering_id, antall_for, antall_ikke_tilstede, antall_mot, behandlingsrekkefoelge, dagsorden_sak_nummer, fri_votering, kommentar,mote_kart_nummer, personlig_votering, presidentid, vedtatt, votering_id, votering_metode, votering_resultat_type, votering_resultat_type_tekst, votering_tema, votering_tid) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", voteringer)
-    print "%s row(s) inserted - votering for saksid %s " % (cursor.rowcount, sakid)
+    if cursor.rowcount > 0:
+        print "%s row(s) inserted - votering for saksid %s " % (cursor.rowcount, sakid)
     conn.commit()
     #sys.exit("stop")
 
@@ -749,7 +755,8 @@ def get_voteringsforslag(voteringid):
     
     cursor = conn.cursor()
     cursor.executemany(""" insert IGNORE into voteringsforslag (voteringid, forslag_id, versjon, forslag_betegnelse, forslag_betegnelse_kort, forslag_levert_av_representant, forslag_paa_vegne_av_tekst, forslag_sorteringsnummer, forslag_tekst, forslag_type) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", vuredringsforslags_liste)
-    print "%s row(s) inserted - voteringsforslag for votering %s " % (cursor.rowcount, voteringid)
+    if cursor.rowcount > 0:
+        print "%s row(s) inserted - voteringsforslag for votering %s " % (cursor.rowcount, voteringid)
     conn.commit()
 
 
@@ -782,7 +789,8 @@ def get_voteringsvedtak(voteringid):
     #print voteringid, len(soup.find_all('voteringsvedtak')), len(voteringsvedtak_liste)
     cursor = conn.cursor()
     cursor.executemany(""" insert IGNORE into voteringsvedtak (voteringid, versjon, vedtak_kode, vedtak_kommentar, vedtak_nummer, vedtak_referanse, vedtak_tekst) values (%s, %s, %s, %s, %s, %s, %s)""", voteringsvedtak_liste)
-    print "%s row(s) inserted - voteringsvedtak for votering %s " % (cursor.rowcount, voteringid)
+    if cursor.rowcount > 0:
+        print "%s row(s) inserted - voteringsvedtak for votering %s " % (cursor.rowcount, voteringid)
     conn.commit()
     
 def batch_fetch_alle_voteringsvedtak():
@@ -820,9 +828,12 @@ def get_voteringsresultat(voteringid):
         )
         voteringsresultat_liste.append(rep_votr)
     cursor = conn.cursor()
-    #cursor.executemany(""" insert IGNORE into voteringsvedtak (voteringid, versjon, vedtak_kode, vedtak_kommentar, vedtak_nummer, vedtak_referanse, vedtak_tekst) values (%s, %s, %s, %s, %s, %s, %s)""", voteringsvedtak_liste)
-    #print "%s row(s) inserted - voteringsvedtak for votering %s " % (cursor.rowcount, voteringid)
+    
+    cursor.executemany(""" insert IGNORE into voteringsresultat (voteringid, representant_id, versjon, fast_vara_for, vara_for, votering) values (%s, %s, %s, %s, %s, %s)""", voteringsresultat_liste)
+    if cursor.rowcount > 0:
+        print "%s row(s) inserted - voteringsresultat for votering %s " % (cursor.rowcount, voteringid)
     conn.commit()
+    #print str("n"), 
     
 
 def batch_fetch_alle_voteringsresultat():
@@ -831,31 +842,67 @@ def batch_fetch_alle_voteringsresultat():
     cursor.execute("""SELECT DISTINCT votering_id FROM sak_votering""")     #hvorfor må denne være distinkt? kan flere saker ha samme votering_id? eller er det redundans i sak_votering-tabellen?
     results = cursor.fetchall()
     for result in results:
-        time.sleep(1.5)     #ikke stresse it@stortinget ?
+        #time.sleep(1.5)     #ikke stresse it@stortinget ?
         get_voteringsresultat(result[0])
 
+def get_current_session_nr():
+    cursor = conn.cursor()
+    cursor.execute("""SELECT id FROM sesjoner WHERE `er_innevaerende` = 1""")
+    result = cursor.fetchone()
+    return result[0]
 
 def main():
+    # noe slikt kan gjøres for de tingene der det skal sjekkes etter nye ting?
+    # get_skriftligesporsmal(get_current_session_nr())
+    
+    
+    
+    # =============
+    # = basisdata =
+    # =============
+    get_fylker()
+    get_emner()
+    get_stortingsperioder()
+    get_alle_partier()
+    get_alle_komiteer()
+    #   # get_dagensrepresentanter()        # denne har jeg ikke, og er usikker på om jeg trenger til noe.
+    get_sesjoner()
+    
+    # =============================
+    # = data som krever sesjon_id =
+    # =============================
+    batch_fetch_alle_skriftligesporsmal() # get_skriftligesporsmal('2011-2012')
+    time.sleep(100)
+    batch_fetch_alle_interpellasjoner()     # get_interpellasjoner('2011-2012')
+    time.sleep(100)
+    batch_fetch_alle_sporretimesporsmal() # get_sporretimesporsmal('2011-2012')
+    time.sleep(100)
+    batch_fetch_alle_representanter() #  get_representanter('2009-2013')
+    time.sleep(100)
+    batch_fetch_alle_kommiteer_pr_sessjon() # get_kommiteer('2011-2012')
+    time.sleep(100)
+    batch_fetch_alle_partier_pr_sessjon() # get_partier('2011-2012')
+    time.sleep(100)
+    batch_fetch_alle_saker() # get_saker('2011-2012')    
+    time.sleep(100)
+    
+    # ==========================
+    # = data som krever saksid =
+    # ==========================
+    batch_fetch_alle_voteringer() # get_voteringer('50135')
+    time.sleep(100)
+
+    # ==============================
+    # = data som krever voteringid =
+    # ==============================
     batch_fetch_alle_voteringsresultat() # get_voteringsresultat('1499')
-    ##batch_fetch_alle_voteringsvedtak() # get_voteringsvedtak('1499')
-#    batch_fetch_alle_voteringsforslag() # get_voteringsforslag('1499')
-    ##batch_fetch_alle_voteringer() # get_voteringer('50135')
-    ##batch_fetch_alle_saker() # get_saker('2011-2012')    
-    ##batch_fetch_alle_skriftligesporsmal() # get_skriftligesporsmal('2011-2012')
-    ##batch_fetch_alle_interpellasjoner()     # get_interpellasjoner('2011-2012')
-    ##batch_fetch_alle_sporretimesporsmal() # get_sporretimesporsmal('2011-2012')
-    # get_dagensrepresentanter()
-    ## batch_fetch_alle_representanter() # kjører denne i batch (for each stortingsperiode):     ## get_representanter('2009-2013')
-    ##get_alle_komiteer()
-    ##batch_fetch_alle_kommiteer_pr_sessjon() # get_kommiteer('2011-2012')
-    ##get_alle_partier()
-    ##batch_fetch_alle_partier_pr_sessjon() # get_partier('2011-2012')
-    ##get_fylker()
-    ##get_emner()
-    ##get_sesjoner()
-    ##get_stortingsperioder()
+    time.sleep(100)
+    batch_fetch_alle_voteringsvedtak() # get_voteringsvedtak('1499')
+    time.sleep(100)
+    batch_fetch_alle_voteringsforslag() # get_voteringsforslag('1499')
+    time.sleep(100)
+
     os.system('exit')           # denne killer prosessen etter at alt har kjøpt (sies det)
-    #os.system("kill -9 %d" % (os.getppid()))
 
 
 
