@@ -3,5 +3,4 @@ utdatert.py
 toolbar.py
 *.log
 *.csv
-*.sql
 *.xml
