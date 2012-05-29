@@ -845,54 +845,50 @@ def main():
     # noe slikt kan gjøres for de tingene der det skal sjekkes etter nye ting?
     # get_skriftligesporsmal(get_current_session_nr())
     
+    # =============
+    # = basisdata =
+    # =============
+    get_fylker()
+    get_emner()
+    get_stortingsperioder()
+    get_alle_partier()
+    get_alle_komiteer()
+    #   # get_dagensrepresentanter()        # denne har jeg ikke, og er usikker på om jeg trenger til noe. Inneholder den noe viktig som representanter ikke har?
+    get_sesjoner()
     
     
-    # # =============
-    # # = basisdata =
-    # # =============
-    # get_fylker()
-    # get_emner()
-    # get_stortingsperioder()
-    # get_alle_partier()
-    # get_alle_komiteer()
-    # #   # get_dagensrepresentanter()        # denne har jeg ikke, og er usikker på om jeg trenger til noe.
-    # get_sesjoner()
-    # 
-    # time.sleep(10)
-    # 
-    # # =============================
-    # # = data som krever sesjon_id =
-    # # =============================
-    # batch_fetch_alle_skriftligesporsmal() # get_skriftligesporsmal('2011-2012')
-    # time.sleep(100)
-    # batch_fetch_alle_interpellasjoner()     # get_interpellasjoner('2011-2012')
-    # time.sleep(100)
-    # batch_fetch_alle_sporretimesporsmal() # get_sporretimesporsmal('2011-2012')
-    # time.sleep(100)
-    # batch_fetch_alle_representanter() #  get_representanter('2009-2013')
-    # time.sleep(100)
-    # batch_fetch_alle_kommiteer_pr_sessjon() # get_kommiteer('2011-2012')
-    # time.sleep(100)
-    # batch_fetch_alle_partier_pr_sessjon() # get_partier('2011-2012')
-    # time.sleep(100)
-#    batch_fetch_alle_saker() # get_saker('2011-2012')    
-#    time.sleep(100)
+    # =============================
+    # = data som krever sesjon_id =
+    # =============================
+    batch_fetch_alle_skriftligesporsmal()   # get_skriftligesporsmal('2011-2012')
+    #time.sleep(10)
+    batch_fetch_alle_interpellasjoner()     # get_interpellasjoner('2011-2012')
+    #time.sleep(10)
+    batch_fetch_alle_sporretimesporsmal()   # get_sporretimesporsmal('2011-2012')
+    #time.sleep(10)
+    batch_fetch_alle_representanter()       #  get_representanter('2009-2013')
+    #time.sleep(10)
+    batch_fetch_alle_kommiteer_pr_sessjon() # get_kommiteer('2011-2012')
+    #time.sleep(10)
+    batch_fetch_alle_partier_pr_sessjon()   # get_partier('2011-2012')
+    #time.sleep(10)
+    batch_fetch_alle_saker()                # get_saker('2011-2012')    
+    #time.sleep(10)
     
     # ==========================
     # = data som krever saksid =
     # ==========================
-#    batch_fetch_alle_voteringer() # get_voteringer('50135')
-#    time.sleep(100)
+    batch_fetch_alle_voteringer()           # get_voteringer('50135')
     
     # ==============================
     # = data som krever voteringid =
     # ==============================
-#    batch_fetch_alle_voteringsresultat() # get_voteringsresultat('1499')
-#    time.sleep(100)
-#    batch_fetch_alle_voteringsvedtak() # get_voteringsvedtak('1499')
-#    time.sleep(100)
-    batch_fetch_alle_voteringsforslag() # get_voteringsforslag('1499')
-    time.sleep(100)
+    batch_fetch_alle_voteringsresultat()    # get_voteringsresultat('1499')
+    #time.sleep(10)
+    batch_fetch_alle_voteringsvedtak()      # get_voteringsvedtak('1499')
+    #time.sleep(10)
+    batch_fetch_alle_voteringsforslag()     # get_voteringsforslag('1499')
+    #time.sleep(10)
     
     os.system('exit')           # denne killer prosessen etter at alt har kjøpt (sies det)
 

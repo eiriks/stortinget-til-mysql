@@ -9,27 +9,22 @@ Jeg har tenkt at funksjonene skal kunne settes som via crontab slik at ny data k
 
 
 
-
-
 ## databaseskjema
- å ja.. det mangler selvsagt et databaseskjema til dette. jeg er ikke ferdig med å vikle ut hva som er relaskjoner til hva i XML'n fra APIet, så jeg har ikke lagt det med enda.
-Om du vil ha det uferdige skjemaet, så ta kontakt.
+Det ligger nå ved et databaseskjema som kan bruke til å opprette tabeller. Tanken jeg gikk for var å bruke solide primær- og kombinasjonsnøkler slik at INSERT IGNORT statments kan brukes til å sette inn "det som ikke finnes fra før". 
 
-Og hvis du har laget det selv, og vil dele, ta kontakt.
 
+##Avhengigheter til andre python bibliotek
+Jeg har forsøkt å gjøre dette så enkelt som mulig for meg, det betyr å bruke andre bibliotek der jeg har funnet det nyttig.
+
+* import [requests](http://kennethreitz.com/requests-python-http-module.html)
+* from bs4 import [BeautifulSoup](http://www.crummy.com/software/BeautifulSoup/) 
+* import xml.etree.cElementTree as [et](http://lxml.de/) eller var det http://effbot.org/zone/celementtree.htm ?
+* import [MySQLdb](http://mysql-python.sourceforge.net/)
 
 
 -E
 
-
-
-
-
-
-
-
 ### jeg leker med markdown..
-bare glem dette..
 
 > sitat
 > mer sitat

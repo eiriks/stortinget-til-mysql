@@ -1,3 +1,5 @@
+# denne er autogrnerert fra sequelPro - et glimrende gratis GUI til mySQL
+# -Eirik
 # ************************************************************
 # Sequel Pro SQL dump
 # Version 3408
