@@ -27,8 +27,9 @@ def dagens_representanter_for(fylke_id):
     
     for rep in cursor.fetchall(): 
         print rep
-        #if ip == None:
-        #    print "wtf!!!"
+        cursor.execute("""SELECT * FROM allekomiteer k, dagensrepresentanter_komiteer d WHERE k.id = d.kom_id AND d.rep_id = '%s' """ % (rep[0]))
+        for kom in cursor.fetchall():
+            print "\t", kom
     cursor.close()
     conn.close()
     #conn.commit()
@@ -48,7 +49,7 @@ def representanter(fylke_id):
 
 
 def main():
-    print representanter('AA')
+    #print representanter('AA')
     print dagens_representanter_for('AA')
 
 
