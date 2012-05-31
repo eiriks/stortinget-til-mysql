@@ -1,6 +1,7 @@
 utdatert.py
 .DS_Store
 toolbar.py
+stortinget_old.sql
 *.log
 *.csv
 *.xml

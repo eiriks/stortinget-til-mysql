@@ -1,5 +1,3 @@
-# denne er autogrnerert fra sequelPro - et glimrende gratis GUI til mySQL
-# -Eirik
 # ************************************************************
 # Sequel Pro SQL dump
 # Version 3408
@@ -9,7 +7,7 @@
 #
 # Host: localhost (MySQL 5.5.9)
 # Database: stortinget
-# Generation Time: 2012-05-22 17:24:14 +0200
+# Generation Time: 2012-05-31 17:41:28 +0200
 # ************************************************************
 
 
@@ -25,6 +23,8 @@
 # Dump of table allekomiteer
 # ------------------------------------------------------------
 
+DROP TABLE IF EXISTS `allekomiteer`;
+
 CREATE TABLE `allekomiteer` (
   `id` varchar(50) NOT NULL DEFAULT '',
   `versjon` varchar(50) DEFAULT NULL,
@@ -37,6 +37,8 @@ CREATE TABLE `allekomiteer` (
 # Dump of table allepartier
 # ------------------------------------------------------------
 
+DROP TABLE IF EXISTS `allepartier`;
+
 CREATE TABLE `allepartier` (
   `id` varchar(10) NOT NULL DEFAULT '',
   `versjon` varchar(50) DEFAULT NULL,
@@ -46,8 +48,45 @@ CREATE TABLE `allepartier` (
 
 
 
+# Dump of table dagensrepresentanter
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `dagensrepresentanter`;
+
+CREATE TABLE `dagensrepresentanter` (
+  `id` varchar(11) NOT NULL DEFAULT '',
+  `versjon` varchar(50) DEFAULT NULL,
+  `doedsdato` datetime DEFAULT NULL,
+  `etternavn` varchar(100) DEFAULT '',
+  `foedselsdato` datetime DEFAULT NULL,
+  `fornavn` varchar(100) DEFAULT NULL,
+  `kjoenn` varchar(50) DEFAULT NULL,
+  `fylke` varchar(2) DEFAULT NULL,
+  `parti` varchar(10) DEFAULT NULL,
+  `fast_vara_for` varchar(11) DEFAULT NULL,
+  `vara_for` varchar(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+# Dump of table dagensrepresentanter_komiteer
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `dagensrepresentanter_komiteer`;
+
+CREATE TABLE `dagensrepresentanter_komiteer` (
+  `rep_id` varchar(11) NOT NULL DEFAULT '',
+  `kom_id` varchar(50) NOT NULL DEFAULT '',
+  PRIMARY KEY (`rep_id`,`kom_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
 # Dump of table emne
 # ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `emne`;
 
 CREATE TABLE `emne` (
   `id` int(5) unsigned NOT NULL,
@@ -63,6 +102,8 @@ CREATE TABLE `emne` (
 # Dump of table fylker
 # ------------------------------------------------------------
 
+DROP TABLE IF EXISTS `fylker`;
+
 CREATE TABLE `fylker` (
   `id` varchar(2) NOT NULL DEFAULT '',
   `navn` varchar(100) NOT NULL DEFAULT '',
@@ -73,6 +114,8 @@ CREATE TABLE `fylker` (
 
 # Dump of table kommiteer_per_sesjon
 # ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `kommiteer_per_sesjon`;
 
 CREATE TABLE `kommiteer_per_sesjon` (
   `sesjonid` varchar(11) NOT NULL DEFAULT '',
@@ -87,6 +130,8 @@ CREATE TABLE `kommiteer_per_sesjon` (
 # Dump of table partier_per_sesjon
 # ------------------------------------------------------------
 
+DROP TABLE IF EXISTS `partier_per_sesjon`;
+
 CREATE TABLE `partier_per_sesjon` (
   `versjon` varchar(20) DEFAULT NULL,
   `partiid` varchar(10) NOT NULL DEFAULT '',
@@ -99,6 +144,8 @@ CREATE TABLE `partier_per_sesjon` (
 
 # Dump of table representanter
 # ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `representanter`;
 
 CREATE TABLE `representanter` (
   `id` varchar(11) NOT NULL DEFAULT '',
@@ -119,6 +166,8 @@ CREATE TABLE `representanter` (
 # Dump of table sak_emne
 # ------------------------------------------------------------
 
+DROP TABLE IF EXISTS `sak_emne`;
+
 CREATE TABLE `sak_emne` (
   `saksid` int(11) NOT NULL DEFAULT '0',
   `emneid` int(5) NOT NULL DEFAULT '0',
@@ -130,6 +179,8 @@ CREATE TABLE `sak_emne` (
 # Dump of table sak_saksordfoerer
 # ------------------------------------------------------------
 
+DROP TABLE IF EXISTS `sak_saksordfoerer`;
+
 CREATE TABLE `sak_saksordfoerer` (
   `saksid` int(11) NOT NULL DEFAULT '0',
   `saksordfoerer` varchar(11) NOT NULL DEFAULT '',
@@ -140,6 +191,8 @@ CREATE TABLE `sak_saksordfoerer` (
 
 # Dump of table sak_votering
 # ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `sak_votering`;
 
 CREATE TABLE `sak_votering` (
   `sak_id` int(11) NOT NULL DEFAULT '0',
@@ -170,6 +223,8 @@ CREATE TABLE `sak_votering` (
 # Dump of table saker
 # ------------------------------------------------------------
 
+DROP TABLE IF EXISTS `saker`;
+
 CREATE TABLE `saker` (
   `id` int(11) unsigned NOT NULL,
   `versjon` varchar(50) DEFAULT NULL,
@@ -193,6 +248,8 @@ CREATE TABLE `saker` (
 # Dump of table sesjoner
 # ------------------------------------------------------------
 
+DROP TABLE IF EXISTS `sesjoner`;
+
 CREATE TABLE `sesjoner` (
   `id` varchar(50) NOT NULL DEFAULT '',
   `versjon` varchar(50) DEFAULT NULL,
@@ -206,6 +263,8 @@ CREATE TABLE `sesjoner` (
 
 # Dump of table sporsmal
 # ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `sporsmal`;
 
 CREATE TABLE `sporsmal` (
   `id` int(11) unsigned NOT NULL,
@@ -241,6 +300,8 @@ CREATE TABLE `sporsmal` (
 # Dump of table sporsmal_emne
 # ------------------------------------------------------------
 
+DROP TABLE IF EXISTS `sporsmal_emne`;
+
 CREATE TABLE `sporsmal_emne` (
   `sporsmalid` int(11) NOT NULL DEFAULT '0',
   `emneid` int(5) NOT NULL DEFAULT '0',
@@ -251,6 +312,8 @@ CREATE TABLE `sporsmal_emne` (
 
 # Dump of table stortingsperioder
 # ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `stortingsperioder`;
 
 CREATE TABLE `stortingsperioder` (
   `id` varchar(50) NOT NULL DEFAULT '',
@@ -265,6 +328,8 @@ CREATE TABLE `stortingsperioder` (
 
 # Dump of table voteringsforslag
 # ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `voteringsforslag`;
 
 CREATE TABLE `voteringsforslag` (
   `voteringid` int(11) NOT NULL DEFAULT '0',
@@ -285,6 +350,8 @@ CREATE TABLE `voteringsforslag` (
 # Dump of table voteringsresultat
 # ------------------------------------------------------------
 
+DROP TABLE IF EXISTS `voteringsresultat`;
+
 CREATE TABLE `voteringsresultat` (
   `voteringid` int(11) NOT NULL DEFAULT '0',
   `representant_id` varchar(11) NOT NULL DEFAULT '',
@@ -299,6 +366,8 @@ CREATE TABLE `voteringsresultat` (
 
 # Dump of table voteringsvedtak
 # ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `voteringsvedtak`;
 
 CREATE TABLE `voteringsvedtak` (
   `voteringid` int(11) NOT NULL DEFAULT '0',

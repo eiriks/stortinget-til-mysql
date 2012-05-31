@@ -256,20 +256,45 @@ def batch_fetch_alle_representanter():
     
 
 def get_dagensrepresentanter():
-    """ krever to tabeller: dagensrepresentanter, og folkevalgt_sitter_i_kommite """
-    # skal jeg bale med lekasjoner til vara-plassene??
-    # dette er hovedsaklig redundant data, det eneste som er "nytt" er relaksjon til komiteer og vara-funksjoner....
+    """ 
+        - krever to tabeller: dagensrepresentanter, og dagensrepresentanter_komiteer 
+        - denne funksjonen er ikke designet mtå at disse folka byttes ut an gang i blant (det er ingenting for å slette "utdaterte" politikere. )
+    """
     url = "http://data.stortinget.no/eksport/dagensrepresentanter"
-    
-    # skal bli databasetabell
-    #dagensrepresentanter: id (erstatter: versjon, doedsdato, etternavn, foedselsdato, fornavn, kjoenn, fylke & parti), fast_vara_for, ref:(1:n) komiteer, vara_for (ukjent, alltid nil=true, sikkert en ref til representantid hvis aktuell? aka varchar(20).)
-    # og
-    #folkevalgt_sitter_i_kommite: folkvalgtid, komiteid, sesjonid
-    # ===========================
-    # = her gjenstår det arbeid =
-    # ===========================
-    
-    # trenger jeg denne? hva skal den brukes til? Er ikke dette bare et utsnitt av representanter-tabellen der sesjon= "den stortingsperioden vi er i nå"? 
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content)
+    representanter = []
+    for rep in soup.find_all('dagensrepresentant'):
+        try:
+            fast_vara_for = rep.fast_vara_for.id.text
+        except:
+            fast_vara_for = ''
+        # det er ingen som er vara_for per i dag, så jeg bare gjetter på at dette vil virke hvis dette en dag skulle bli brukt (altså st noen skulle bli fast vara for noen)
+        try:
+            vara_for = rep.vara_for.id.text
+        except:
+            vara_for = ''
+            
+        rep_komitee = []
+        if(len(rep.find_all('komite'))>0):
+            for ref in rep.find_all('komite'):
+                rep_komitee.append(ref.id.text)
+        
+        en_rep = (rep.id.text, rep.versjon.text, rep.doedsdato.text, rep.etternavn.text, rep.foedselsdato.text, rep.fornavn.text, rep.kjoenn.text, rep.fylke.id.text, rep.parti.id.text, fast_vara_for, vara_for)
+        #print rep_komitee
+        
+        cursor = conn.cursor()
+        cursor.execute(""" insert IGNORE into dagensrepresentanter (id, versjon, doedsdato, etternavn, foedselsdato, fornavn, kjoenn, fylke, parti, fast_vara_for, vara_for) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", en_rep)
+        if cursor.rowcount > 0:
+            print "%s row(s) inserted (dagensrepresentanter) " % (cursor.rowcount)
+        conn.commit()
+        
+        for relasjon in rep_komitee:            
+            cursor.execute(""" insert IGNORE into dagensrepresentanter_komiteer (rep_id, kom_id) values (%s, %s)""", (rep.id.text.encode('utf8'), relasjon.encode('utf8')))
+            if cursor.rowcount > 0:
+                print "\t %s row(s) inserted (relasjon: dagensrepresentanter_komiteer:  %s-%s )" % (cursor.rowcount, rep.id.text.encode('utf8'), relasjon.encode('utf8'))
+            conn.commit()
+
     
 def get_sporretimesporsmal(sesjonid):
     url = "http://data.stortinget.no/eksport/sporretimesporsmal?sesjonid=%s" % (sesjonid)
@@ -844,6 +869,10 @@ def get_current_session_nr():
 def main():
     # noe slikt kan gjøres for de tingene der det skal sjekkes etter nye ting?
     # get_skriftligesporsmal(get_current_session_nr())
+    
+    
+    get_dagensrepresentanter()
+    sys.exit("jeg henter bare dagens representanter nå")
     
     # =============
     # = basisdata =
