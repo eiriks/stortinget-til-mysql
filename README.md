@@ -43,7 +43,7 @@ søk er case-insensitift (ingen bokstavkjenslevarlei)
 * dokument 2			2		(en av disse omhandler ikke TV2 på noen måte)
 * TV3					2
 * kapital				203		(innlysende mye som ikke er T. Hegnars her)
-* tv-norge			1		(og er om, ikke fra tv-norge)
+* tv-norge			2		(og er om, ikke fra tv-norge)
 * stavanger aftenblad	63
 * adresseavisa		4
 * drammens tidene		2
@@ -57,21 +57,21 @@ søk er case-insensitift (ingen bokstavkjenslevarlei)
 * Varden				9
 * Tønsbergs Blad		2
 
-Hvis jeg summerer disse 28 søkene (1530, som er urimelig uten å sjekke for feil) og deler på antall spørsmål i basen (ca30k) får vi 0.05*100≈5%.
+Hvis jeg summerer disse 28 søkene (≈1530, som er urimelig uten å sjekke for feil og i hvilken grad de er overlappende) og deler på antall spørsmål i basen (ca30k) får vi 0.05*100≈5%.
 Altså (veldig røfflig) at 5% av spørsmålene som leveres inneholder en referanse til medier. Det er 
 1. metodiske slappt arbeid
-2. helt sikkert feil
+2. helt sikkert feil (men hvem vet hvor feil det er?)
 
 men er det for lite? Eller mye?
 Kan det hende at kun 5% av spørsmålene er fra ting som mediene graver fram?
 
 
 #####Flere søkeord
-avisen			243		
-fjernsyn		46
-" TV "			36
-" TV-"			62
-radio			163		(er er det mye som ikke omhandler nyhetsmedier)
+* avisen			243		
+* fjernsyn		46
+* " TV "			36
+* " TV-"			62
+* radio			163		(er er det mye som ikke omhandler nyhetsmedier)
 
 som også er ganske lite..
 
