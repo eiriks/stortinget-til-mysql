@@ -34,13 +34,13 @@ søk er case-insensitift (ingen bokstavkjenslevarlei)
 * Vårt land			60 		(her er det selvsagt noen feil)
 * Dagbladet			128
 * nrk					342		(rimelig å anta at det også er de del spørsmål om finansiering/drift osv av nrk)
-* brennpunkt			11
+    * brennpunkt			11
 * Bergens tidene		1
 * nationen			63
 * se og hør			1
 * agderposten			16
 * TV2					96
-* dokument 2			2		(en av disse omhandler ikke TV2 på noen måte)
+    * dokument 2			2		(en av disse omhandler ikke TV2 på noen måte)
 * TV3					2
 * kapital				203		(innlysende mye som ikke er T. Hegnars her)
 * tv-norge			2		(og er om, ikke fra tv-norge)
