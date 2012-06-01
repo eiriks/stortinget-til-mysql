@@ -11,8 +11,8 @@ import os
 #import requests         # http://kennethreitz.com/requests-python-http-module.html
 #import json
 #import time
-from bs4 import BeautifulSoup
-import xml.etree.cElementTree as et
+#from bs4 import BeautifulSoup
+#import xml.etree.cElementTree as et
 import MySQLdb
 conn = MySQLdb.connect(host = "localhost", user = "root", passwd = "root", db = "stortinget", charset='utf8') # dette må du naturlig nok tilpasse din egen maskin..
 

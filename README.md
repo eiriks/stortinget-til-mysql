@@ -24,7 +24,59 @@ Jeg har forsøkt å gjøre dette så enkelt som mulig for meg, det betyr å bruk
 
 -E
 
-### jeg leker med markdown..
+
+# søk etter medier i spørsmål 
+søk er case-insensitift (ingen bokstavkjenslevarlei)
+
+aftenposten 		291
+" vg "				127		(søket innehold mellomrom før og etter VG)
+Verdens gang		30
+Vårt land			60 		(her er det selvsagt noen feil)
+Dagbladet			128
+nrk					342		(rimelig å anta at det også er de del spørsmål om finansiering/drift osv av nrk)
+brennpunkt			11
+Bergens tidene		1
+nationen			63
+se og hør			1
+agderposten			16
+TV2					96
+dokument 2			2		(en av disse omhandler ikke TV2 på noen måte)
+TV3					2
+kapital				203		(innlysende mye som ikke er T. Hegnars her)
+tv-norge			1		(og er om, ikke fra tv-norge)
+stavanger aftenblad	63
+adresseavisa		4
+drammens tidene		2
+nettavisen			11
+klassekampen		31
+Altaposten			4
+Arendals Tidende	1
+Bergensavisen		7
+Østlendingen		18
+Østlandets Blad		4
+Varden				9
+Tønsbergs Blad		2
+
+Hvis jeg summerer disse 28 søkene (som er urimelig) og deler på antall spørsmål i basen (ca30k) får vi 0.05.
+Altså (veldig røfflig) at 0.05% av spørsmålene som leveres inneholder en referanse til medier. Det er 
+1) metodiske slappt arbeid
+2) feil
+
+men er det for lite? 
+Kan det hende at kun 0.05% av spørsmålene er fra ting som mediene graver fram?
+
+
+#####Flere søkeord
+avisen			243		
+fjernsyn		46
+" TV "			36
+" TV-"			62
+radio			163		(er er det mye som ikke omhandler nyhetsmedier)
+
+som også er ganske lite..
+
+
+## jeg leker med markdown..
 
 > sitat
 > mer sitat
@@ -36,8 +88,6 @@ Jeg har forsøkt å gjøre dette så enkelt som mulig for meg, det betyr å bruk
 1. krabbe
 2. gå
 3. løpe
-
-
 
 ###Kode:
     print "Hei verden"
