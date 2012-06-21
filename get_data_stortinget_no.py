@@ -229,18 +229,20 @@ def get_alle_komiteer():
 def get_representanter(stortingsperiodeid):
     """ """
     url = "http://data.stortinget.no/eksport/representanter?stortingsperiodeid=%s" % (stortingsperiodeid)
-    r = requests.get(url)
+    r = requests.get(url)                           #print r.status_code #200
     soup = BeautifulSoup(r.content)
     representanter = []
-    for rep in soup.find_all('representant'):
-        # ikke alle representanter har fylke (det er kanskje pussig, men dog.)
+    #super_teller = 0
+    for rep in soup.find_all('representant'):        # ikke alle representanter har fylke (det er kanskje pussig, men dog.)
         try:
             fylkeid = rep.fylke.id.text
         except:
             fylkeid = ''          # noen bedre måte å indikere at det ikke er noen fylke på (på to bokstaver, eller NULL??)
         representanter.append( (stortingsperiodeid, rep.id.text, rep.versjon.text, rep.doedsdato.text, rep.etternavn.text, rep.foedselsdato.text, rep.fornavn.text, rep.kjoenn.text, fylkeid, rep.parti.id.text) )
+        #super_teller+=1
     # representanter: stortingsperiodeid, versjon, doedsdato, etternavn, foedselsdato, fornavn, id, kjoenn, fylke_id, parti_id
     cursor = conn.cursor()
+    #print super_teller
     cursor.executemany(""" insert IGNORE into representanter (stortingsperiodeid, id, versjon, doedsdato, etternavn, foedselsdato, fornavn, kjoenn, fylke_id, parti_id) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", representanter)
     print "%s row(s) inserted (representanter) for perioden %s " % (cursor.rowcount, stortingsperiodeid)
     conn.commit()
@@ -870,9 +872,8 @@ def main():
     # noe slikt kan gjøres for de tingene der det skal sjekkes etter nye ting?
     # get_skriftligesporsmal(get_current_session_nr())
     
-    
-    get_dagensrepresentanter()
-    sys.exit("jeg henter bare dagens representanter nå")
+    batch_fetch_alle_representanter()
+    #get_dagensrepresentanter()
     sys.exit("jeg henter bare representanter nå")
     
     # =============
@@ -883,7 +884,7 @@ def main():
     get_stortingsperioder()
     get_alle_partier()
     get_alle_komiteer()
-    #   # get_dagensrepresentanter()        # denne har jeg ikke, og er usikker på om jeg trenger til noe. Inneholder den noe viktig som representanter ikke har?
+    get_dagensrepresentanter()        # denne mangler funksjon for å rokkere om hvis der skulle være noe nye.
     get_sesjoner()
     
     
