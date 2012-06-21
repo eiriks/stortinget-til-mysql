@@ -8,6 +8,8 @@ Alle funksjonene skal kunne hente ny data hvis der finnes.
 Jeg har tenkt at funksjonene skal kunne settes som via crontab slik at ny data kan hentes ved behov.
 
 
+NB: det er fortsatt en del feil i dette systemet som gjør at ikke all relevant data fra stortinget hentes ned på en fornuftig måte.
+
 
 ## databaseskjema
 Det ligger nå ved et databaseskjema som kan bruke til å opprette tabeller. Tanken jeg gikk for var å bruke solide primær- og kombinasjonsnøkler slik at INSERT IGNORT statments kan brukes til å sette inn "det som ikke finnes fra før". 

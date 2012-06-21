@@ -873,6 +873,7 @@ def main():
     
     get_dagensrepresentanter()
     sys.exit("jeg henter bare dagens representanter nå")
+    sys.exit("jeg henter bare representanter nå")
     
     # =============
     # = basisdata =
